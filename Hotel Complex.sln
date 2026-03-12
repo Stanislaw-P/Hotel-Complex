@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel Complex", "Hotel Complex\Hotel Complex.csproj", "{88D8ADF8-AEA2-4986-AE8D-2A33DC7037F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelComplex.Db", "HotelComplex.Db\HotelComplex.Db.csproj", "{BDC4218C-5086-45DB-A093-94028144D433}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{88D8ADF8-AEA2-4986-AE8D-2A33DC7037F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88D8ADF8-AEA2-4986-AE8D-2A33DC7037F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88D8ADF8-AEA2-4986-AE8D-2A33DC7037F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88D8ADF8-AEA2-4986-AE8D-2A33DC7037F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDC4218C-5086-45DB-A093-94028144D433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDC4218C-5086-45DB-A093-94028144D433}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDC4218C-5086-45DB-A093-94028144D433}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDC4218C-5086-45DB-A093-94028144D433}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AC19DA11-1D6E-45BB-A00B-13375D877120}
+	EndGlobalSection
+EndGlobal

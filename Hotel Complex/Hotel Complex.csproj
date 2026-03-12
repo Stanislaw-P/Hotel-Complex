@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Hotel_Complex</RootNamespace>
+    <UserSecretsId>e7bb0188-2206-4cb3-953b-390e22837300</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotelComplex.Db\HotelComplex.Db.csproj" />
+  </ItemGroup>
+
+</Project>
