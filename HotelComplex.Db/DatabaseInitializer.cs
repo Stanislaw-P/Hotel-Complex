@@ -54,7 +54,10 @@ namespace HotelComplex.Db
             // Переключаемся на созданную базу
             await connection.ChangeDatabaseAsync("HotelComplex");
 
-            // Создаем все таблицы последовательно
+            // Создаем таблицу журнала ПЕРВОЙ
+            await CreateJournalTable(connection);
+
+            // Создаем все основные таблицы
             await CreateRoomTypeTable(connection);
             await CreateRoomTable(connection);
             await CreateGuestTable(connection);
@@ -70,6 +73,14 @@ namespace HotelComplex.Db
 
             // Добавляем начальные данные
             await InsertInitialData(connection);
+
+            // Удаляем старые архивные таблицы (если есть)
+            await DropArchiveTables(connection);
+
+            // Создаем триггеры и архивные таблицы для всех основных таблиц
+            await CreateTriggersForAllTables(connection);
+
+            _logger.LogInformation("All tables, archive tables, and triggers created successfully");
         }
 
         private async Task ExecuteCommandAsync(MySqlConnection connection, string commandText)
@@ -155,6 +166,7 @@ namespace HotelComplex.Db
                     MiddleName VARCHAR(50),
                     PassportSeries VARCHAR(10) NOT NULL,
                     PassportNumber VARCHAR(20) NOT NULL,
+                    Position VARCHAR(25) NOT NULL,
                     Phone VARCHAR(20) NOT NULL,
                     Email VARCHAR(100),
                     UNIQUE KEY Unique_Passport (PassportSeries, PassportNumber),
@@ -390,6 +402,204 @@ namespace HotelComplex.Db
             }
 
             _logger.LogInformation("Generated rooms for all floors");
+        }
+
+
+        private async Task CreateJournalTable(MySqlConnection connection)
+        {
+            var sql = @"
+        CREATE TABLE IF NOT EXISTS journal (
+            Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            TableName VARCHAR(100) NOT NULL DEFAULT '',
+            Operation VARCHAR(10) NOT NULL DEFAULT '',
+            OperationDate DATETIME NOT NULL,
+            UserName VARCHAR(200) NOT NULL DEFAULT '',
+            INDEX idx_TableName (TableName),
+            INDEX idx_Operation (Operation),
+            INDEX idx_OperationDate (OperationDate),
+            INDEX idx_UserName (UserName)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("Journal table created");
+        }
+
+        private async Task DropArchiveTables(MySqlConnection connection)
+        {
+            var sql = "SHOW TABLES";
+            var tables = new List<string>();
+
+            using (var cmd = new MySqlCommand(sql, connection))
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var tableName = reader.GetString(0);
+                    if (tableName.Contains("_arch"))
+                    {
+                        tables.Add(tableName);
+                    }
+                }
+            }
+
+            foreach (var table in tables)
+            {
+                try
+                {
+                    await ExecuteCommandAsync(connection, $"DROP TABLE IF EXISTS {table}");
+                    _logger.LogDebug($"Dropped archive table: {table}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"Failed to drop archive table: {table}");
+                }
+            }
+        }
+
+        private async Task CreateArchiveTable(MySqlConnection connection, string tableName)
+        {
+            var archiveName = $"{tableName}_arch";
+
+            // Создаем архивную таблицу с такой же структурой
+            var createArchiveSql = $"CREATE TABLE IF NOT EXISTS {archiveName} LIKE {tableName}";
+            await ExecuteCommandAsync(connection, createArchiveSql);
+
+            // Добавляем связь с журналом
+            var addJournalIdSql = $@"
+        ALTER TABLE {archiveName} 
+        ADD COLUMN JournalId INT UNSIGNED,
+        ADD INDEX idx_JournalId (JournalId),
+        ADD FOREIGN KEY (JournalId) REFERENCES journal(Id) ON DELETE SET NULL";
+
+            await ExecuteCommandAsync(connection, addJournalIdSql);
+
+            _logger.LogInformation($"Created archive table: {archiveName}");
+        }
+
+        private async Task CreateTriggersForTable(MySqlConnection connection, string tableName, List<string> columns)
+        {
+            var archiveName = $"{tableName}_arch";
+            var columnsList = string.Join(", ", columns);
+            var valuesList = string.Join(", ", columns.Select(c => $"NEW.{c}"));
+            var oldValuesList = string.Join(", ", columns.Select(c => $"OLD.{c}"));
+
+            // Триггер на INSERT
+            var insertTriggerSql = $@"
+            DROP TRIGGER IF EXISTS {tableName}_insert;
+            CREATE TRIGGER {tableName}_insert
+            AFTER INSERT ON {tableName}
+            FOR EACH ROW
+            BEGIN
+                DECLARE last_id INT;
+            
+                INSERT INTO journal (TableName, Operation, OperationDate, UserName)
+                VALUES ('{tableName}', 'INSERT', NOW(), USER());
+            
+                SET last_id = LAST_INSERT_ID();
+            
+                INSERT INTO {archiveName} ({columnsList}, JournalId)
+                VALUES ({valuesList}, last_id);
+            END;";
+
+            await ExecuteCommandAsync(connection, insertTriggerSql);
+
+            // Триггер на UPDATE
+            var updateTriggerSql = $@"
+            DROP TRIGGER IF EXISTS {tableName}_update;
+            CREATE TRIGGER {tableName}_update
+            AFTER UPDATE ON {tableName}
+            FOR EACH ROW
+            BEGIN
+                DECLARE last_id INT;
+            
+                INSERT INTO journal (TableName, Operation, OperationDate, UserName)
+                VALUES ('{tableName}', 'UPDATE', NOW(), USER());
+            
+                SET last_id = LAST_INSERT_ID();
+            
+                INSERT INTO {archiveName} ({columnsList}, JournalId)
+                VALUES (NEW.{columnsList.Replace("NEW.", "")}, last_id);
+            END;";
+
+            await ExecuteCommandAsync(connection, updateTriggerSql);
+
+            // Триггер на DELETE
+            var deleteTriggerSql = $@"
+            DROP TRIGGER IF EXISTS {tableName}_delete;
+            CREATE TRIGGER {tableName}_delete
+            AFTER DELETE ON {tableName}
+            FOR EACH ROW
+            BEGIN
+                DECLARE last_id INT;
+            
+                INSERT INTO journal (TableName, Operation, OperationDate, UserName)
+                VALUES ('{tableName}', 'DELETE', NOW(), USER());
+            
+                SET last_id = LAST_INSERT_ID();
+            
+                INSERT INTO {archiveName} ({columnsList}, JournalId)
+                VALUES ({oldValuesList}, last_id);
+            END;";
+
+            await ExecuteCommandAsync(connection, deleteTriggerSql);
+
+            _logger.LogInformation($"Created triggers for table: {tableName}");
+        }
+
+        private async Task CreateTriggersForAllTables(MySqlConnection connection)
+        {
+            // Получаем список всех таблиц (кроме служебных)
+            var tables = new List<string>();
+            var getTablesSql = "SHOW TABLES";
+
+            using (var cmd = new MySqlCommand(getTablesSql, connection))
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var tableName = reader.GetString(0);
+                    if (tableName != "journal" && !tableName.Contains("_arch"))
+                    {
+                        tables.Add(tableName);
+                    }
+                }
+            }
+
+            // Для каждой таблицы создаем архивную таблицу и триггеры
+            foreach (var tableName in tables)
+            {
+                // Получаем список колонок таблицы
+                var columns = await GetTableColumns(connection, tableName);
+
+                // Создаем архивную таблицу
+                await CreateArchiveTable(connection, tableName);
+
+                // Создаем триггеры
+                await CreateTriggersForTable(connection, tableName, columns);
+            }
+        }
+
+        private async Task<List<string>> GetTableColumns(MySqlConnection connection, string tableName)
+        {
+            var columns = new List<string>();
+            var sql = $"SHOW COLUMNS FROM {tableName}";
+
+            using (var cmd = new MySqlCommand(sql, connection))
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var columnName = reader.GetString(0);
+                    // Пропускаем auto_increment колонки при вставке
+                    var extra = reader.GetString(5);
+                    if (!extra.Contains("auto_increment"))
+                    {
+                        columns.Add(columnName);
+                    }
+                }
+            }
+
+            return columns;
         }
     }
 }
