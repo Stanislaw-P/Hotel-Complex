@@ -1,0 +1,246 @@
+﻿/* Стили для страниц авторизации */
+.auth-page {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+    /* Фоновое изображение с видом на город сверху */
+    .auth-page::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('/img/city-view.jpg') no-repeat center center;
+        background-size: cover;
+        background-position: center;
+        opacity: 0.85;
+        z-index: 0;
+    }
+
+    /* Добавляем градиент для лучшей читаемости формы */
+    .auth-page .gradient-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(114, 30, 30, 0.85) 0%, rgba(77, 20, 20, 0.75) 50%, rgba(114, 30, 30, 0.85) 100%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Декоративное свечение сверху */
+    .auth-page .top-glow {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        background: linear-gradient(180deg, rgba(226, 215, 151, 0.15) 0%, transparent 100%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Декоративное свечение снизу */
+    .auth-page .bottom-glow {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(0deg, rgba(226, 215, 151, 0.1) 0%, transparent 100%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+/* Карточка авторизации */
+.auth-card {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.97);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    }
+
+/* Заголовок карточки */
+.auth-header {
+    background: linear-gradient(135deg, #721e1e, #4d1414);
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px 20px 0 0;
+    padding: 25px 0;
+    max-height: 180px;
+}
+
+    .auth-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(226, 215, 151, 0.15), transparent);
+        transform: rotate(45deg);
+    }
+
+.auth-icon {
+    font-size: 3rem;
+    color: #e2d797;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-title {
+    color: #e2d797;
+    font-weight: 700;
+    margin-top: 10px;
+    font-size: 1.8rem;
+}
+
+.auth-subtitle {
+    color: rgba(226, 215, 151, 0.9);
+    font-size: 0.95rem;
+}
+
+/* Декоративные элементы */
+.auth-decoration {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+    .auth-decoration i {
+        font-size: 4rem;
+        color: #e2d797;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+/* Анимация для формы */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Стили для полей ввода */
+.auth-input {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+    .auth-input:focus {
+        border-color: #721e1e;
+        box-shadow: 0 0 0 0.2rem rgba(114, 30, 30, 0.25);
+        background: white;
+    }
+
+.auth-label {
+    color: #721e1e;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.auth-btn {
+    background: linear-gradient(135deg, #721e1e, #4d1414);
+    color: #e2d797;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+    .auth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(114, 30, 30, 0.4);
+        color: white;
+    }
+
+.auth-link {
+    color: #721e1e;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .auth-link:hover {
+        color: #4d1414;
+        text-decoration: underline;
+    }
+
+/* Разделитель */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+}
+
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .auth-divider span {
+        padding: 0 10px;
+        color: #999;
+        font-size: 0.9rem;
+    }
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .auth-card {
+        margin: 0 15px;
+    }
+
+    .auth-decoration {
+        display: none;
+    }
+
+    .auth-title {
+        font-size: 1.5rem;
+    }
+
+    .auth-page::before {
+        opacity: 0.7;
+    }
+}
+
+/* Для планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .auth-card {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}

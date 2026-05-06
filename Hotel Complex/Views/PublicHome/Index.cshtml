@@ -1,0 +1,290 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<!-- Hero секция с горами -->
+<div class="hero-section text-center">
+    <div class="container">
+        <div class="welcome-icon">🏔️</div>
+        <span class="feature-badge">Добро пожаловать в горный отель</span>
+        <h1 class="hero-title">Гостиничный комплекс<br>«Горная сказка»</h1>
+        <p class="hero-subtitle">Откройте для себя уют в сердце гор</p>
+
+        <!-- Быстрая форма бронирования -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-10">
+                <div class="quick-booking-form p-4" style="background: rgba(255,255,255,0.15); border-radius: 20px; backdrop-filter: blur(10px);">
+                    <h4 class="mb-3" style="color: #e2d797;">
+                        <i class="bi bi-calendar-heart"></i> Быстрое бронирование
+                    </h4>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="date" id="quickCheckIn" class="form-control"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   value="@DateTime.Today.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" id="quickCheckOut" class="form-control"
+                                   value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="quickCapacity" class="form-select">
+                                <option value="1">1 гость</option>
+                                <option value="2" selected>2 гостя</option>
+                                <option value="3">3 гостя</option>
+                                <option value="4">4 гостя</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button onclick="quickBook()" class="btn w-100"
+                                    style="background: #e2d797; color: #721e1e; font-weight: 600;">
+                                <i class="bi bi-search"></i> Найти номер
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Преимущества отеля -->
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="section-title text-center mb-5">Почему выбирают нас</h2>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-mountain feature-icon"></i>
+                    <h5 class="feature-title">Уникальное расположение</h5>
+                    <p class="feature-text">Потрясающий вид на горы и свежий воздух прямо из окна вашего номера</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-shield-heart feature-icon"></i>
+                    <h5 class="feature-title">Комфорт и безопасность</h5>
+                    <p class="feature-text">Современные номера, круглосуточная охрана и видеонаблюдение</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-wifi feature-icon"></i>
+                    <h5 class="feature-title">Все включено</h5>
+                    <p class="feature-text">Бесплатный Wi-Fi, парковка, фитнес-центр и многое другое</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-door-open"></i> Номера
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">@ViewBag.TotalRooms</div>
+                    <div class="stat-label">Всего номеров</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-check-circle"></i> Свободно
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">@ViewBag.AvailableRooms</div>
+                    <div class="stat-label">Номеров свободно</div>
+                    <a href="@Url.Action("Index", "PublicBooking")" class="stat-link">
+                        Забронировать <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-star-fill"></i> Рейтинг
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">4.8</div>
+                    <div class="stat-label">★ Из 5</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Рекомендуемые номера -->
+    <div class="quick-actions-card mb-5">
+        <h3 class="quick-actions-title text-center">
+            <i class="bi bi-door-open"></i> Популярные номера
+        </h3>
+        <div class="row">
+            @foreach (var room in ViewBag.FeaturedRooms)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <i class="bi bi-building" style="font-size: 3rem; color: #721e1e;"></i>
+                            <h4 class="mt-3 mb-2" style="color: #721e1e;">Номер №@room.RoomNumber</h4>
+                            <p class="text-muted">@room.RoomType?.Name</p>
+                            <p><i class="bi bi-people"></i> Вместимость: @room.Capacity чел.</p>
+                            <p><i class="bi bi-arrow-up"></i> Этаж: @room.Floor</p>
+                            <h5 class="mb-3" style="color: #721e1e;">@room.BasePrice.ToString("N0") ₽ / сутки</h5>
+                            <a href="@Url.Action("Book", "PublicBooking", new { roomId = room.Id, checkIn = DateTime.Today, checkOut = DateTime.Today.AddDays(1) })"
+                               class="action-btn w-100 text-center">
+                                Забронировать
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-3">
+            <a href="@Url.Action("Index", "PublicBooking")" class="action-btn action-btn-outline">
+                Смотреть все номера <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Отзывы гостей -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="section-title text-center mb-4">Отзывы наших гостей</h3>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card" style="border: 2px solid #e2d797; border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="card-text">"Великолепный отель! Номера чистые, персонал вежливый. Вид на горы просто завораживает. Обязательно вернемся!"</p>
+                    <h6 class="mt-3 text-end">— Анна Иванова</h6>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card" style="border: 2px solid #e2d797; border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="card-text">"Отличное место для отдыха с семьей. Детям очень понравилось, много развлечений. Рекомендую!"</p>
+                    <h6 class="mt-3 text-end">— Михаил Петров</h6>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card" style="border: 2px solid #e2d797; border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-half"></i>
+                    </div>
+                    <p class="card-text">"Прекрасный сервис, вкусная кухня в ресторане. Единственный минус - далековато от города."</p>
+                    <h6 class="mt-3 text-end">— Елена Смирнова</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Карта и контакты -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="quick-actions-card h-100">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-geo-alt"></i> Как нас найти
+                </h4>
+                <div class="text-center p-3">
+                    <i class="bi bi-pin-map-fill" style="font-size: 3rem; color: #721e1e;"></i>
+                    <p class="mt-3">
+                        <strong>Республика Северная Осетия-Алания</strong><br>
+                        Дигорское ущелье, с. Дзинага<br>
+                        Горный туристический комплекс
+                    </p>
+                    <a href="#" class="action-btn action-btn-outline mt-2">
+                        <i class="bi bi-map"></i> Построить маршрут
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="quick-actions-card h-100">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-telephone"></i> Контакты
+                </h4>
+                <div class="p-3">
+                    <div class="footer-contact mb-3">
+                        <i class="bi bi-telephone-fill" style="color: #721e1e;"></i>
+                        <span>+7 (999) 123-45-67</span>
+                    </div>
+                    <div class="footer-contact mb-3">
+                        <i class="bi bi-envelope-fill" style="color: #721e1e;"></i>
+                        <span>info@mountain-hotel.ru</span>
+                    </div>
+                    <div class="footer-contact mb-3">
+                        <i class="bi bi-clock-fill" style="color: #721e1e;"></i>
+                        <span>Ресепшн: 24/7</span>
+                    </div>
+                    <div class="footer-contact">
+                        <i class="bi bi-whatsapp" style="color: #721e1e;"></i>
+                        <span>+7 (999) 123-45-67 (WhatsApp)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Установка минимальных дат для быстрого бронирования
+        var today = new Date().toISOString().split('T')[0];
+        document.getElementById('quickCheckIn').min = today;
+
+        document.getElementById('quickCheckIn').addEventListener('change', function() {
+            document.getElementById('quickCheckOut').min = this.value;
+            if (document.getElementById('quickCheckOut').value <= this.value) {
+                document.getElementById('quickCheckOut').value = this.value;
+            }
+        });
+
+        function quickBook() {
+            var checkIn = document.getElementById('quickCheckIn').value;
+            var checkOut = document.getElementById('quickCheckOut').value;
+            var capacity = document.getElementById('quickCapacity').value;
+
+            if (checkIn && checkOut) {
+                window.location.href = '/PublicBooking/Search?checkIn=' + checkIn + '&checkOut=' + checkOut + '&capacity=' + capacity;
+            }
+        }
+    </script>
+}

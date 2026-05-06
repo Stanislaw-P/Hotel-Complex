@@ -1,0 +1,109 @@
+﻿<!-- Views/PublicBooking/Index.cshtml -->
+@{
+    ViewData["Title"] = "Забронировать номер";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4" style="color: #721e1e;">
+            <i class="bi bi-calendar-heart"></i> Забронировать номер
+        </h1>
+        <p class="lead">Выберите даты и найдите идеальный номер для вашего отдыха</p>
+    </div>
+
+    <!-- Форма поиска -->
+    <div class="quick-actions-card mb-5">
+        <h3 class="quick-actions-title text-center">
+            <i class="bi bi-search"></i> Поиск свободных номеров
+        </h3>
+
+        <form id="searchForm" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-calendar-check"></i> Дата заезда
+                </label>
+                <input type="date" id="checkIn" name="checkIn" class="form-control"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-calendar-x"></i> Дата выезда
+                </label>
+                <input type="date" id="checkOut" name="checkOut" class="form-control"
+                       value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-people"></i> Количество гостей
+                </label>
+                <select id="capacity" name="capacity" class="form-select">
+                    <option value="1">1 человек</option>
+                    <option value="2" selected>2 человека</option>
+                    <option value="3">3 человека</option>
+                    <option value="4">4 человека</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="action-btn w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Результаты поиска -->
+    <div id="searchResults">
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-info-circle fs-1"></i>
+            <p class="mt-3">Выберите даты и нажмите "Поиск", чтобы увидеть доступные номера</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Установка минимальных дат
+            var today = new Date().toISOString().split('T')[0];
+            $('#checkIn').attr('min', today);
+
+            $('#checkIn').on('change', function() {
+                var minCheckOut = $(this).val();
+                $('#checkOut').attr('min', minCheckOut);
+                if ($('#checkOut').val() <= minCheckOut) {
+                    $('#checkOut').val(minCheckOut);
+                }
+            });
+
+            // Поиск при загрузке страницы
+            performSearch();
+
+            // Поиск при отправке формы
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+
+            function performSearch() {
+                var checkIn = $('#checkIn').val();
+                var checkOut = $('#checkOut').val();
+                var capacity = $('#capacity').val();
+
+                if (!checkIn || !checkOut) return;
+
+                $.get('/PublicBooking/Search', {
+                    checkIn: checkIn,
+                    checkOut: checkOut,
+                    capacity: capacity
+                }, function(data) {
+                    $('#searchResults').html(data);
+                });
+            }
+        });
+    </script>
+}
