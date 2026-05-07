@@ -1,0 +1,179 @@
+﻿@model ServiceOrderViewModel
+
+@{
+    ViewData["Title"] = "Заказ услуги";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="quick-actions-card">
+                <h2 class="quick-actions-title text-center">
+                    <i class="bi bi-grid"></i> Заказ дополнительной услуги
+                </h2>
+
+                <!-- Информация о госте и номере -->
+                <div class="alert alert-info mb-4" style="background: #e8f4f8; border: none; border-radius: 15px;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Гость</small>
+                            <p class="mb-0 fw-bold">Иванов Иван Иванович</p>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">Номер</small>
+                            <p class="mb-0 fw-bold">№ 101</p>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">Дата заезда</small>
+                            <p class="mb-0 fw-bold">15.05.2024 - 20.05.2024</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Create" method="post">
+                    <input type="hidden" asp-for="StayId" value="1" />
+
+                    <div class="mb-4">
+                        <label asp-for="ServiceId" class="form-label fw-bold">
+                            <i class="bi bi-list-check"></i> Выберите услугу
+                        </label>
+                        <select asp-for="ServiceId" class="form-select" id="serviceSelect" required>
+                            <option value="">-- Выберите услугу --</option>
+                            <option value="1" data-price="500">Завтрак (500 ₽)</option>
+                            <option value="2" data-price="800">Обед (800 ₽)</option>
+                            <option value="3" data-price="1000">Ужин (1000 ₽)</option>
+                            <option value="4" data-price="300">Прачечная (300 ₽)</option>
+                            <option value="5" data-price="500">Химчистка (500 ₽)</option>
+                            <option value="6" data-price="1500">Трансфер (1500 ₽)</option>
+                            <option value="7" data-price="2000">Экскурсия (2000 ₽)</option>
+                            <option value="8" data-price="2500">СПА (2500 ₽)</option>
+                            <option value="9" data-price="500">Тренажерный зал (500 ₽)</option>
+                            <option value="10" data-price="300">Парковка (300 ₽)</option>
+                        </select>
+                        <span asp-validation-for="ServiceId" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="OrderDate" class="form-label fw-bold">
+                                <i class="bi bi-calendar"></i> Дата заказа
+                            </label>
+                            <input asp-for="OrderDate" type="date" class="form-control"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="OrderDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Quantity" class="form-label fw-bold">
+                                <i class="bi bi-plus-slash-minus"></i> Количество
+                            </label>
+                            <input asp-for="Quantity" type="number" class="form-control" min="1" max="10" id="quantity" />
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Comment" class="form-label fw-bold">
+                            <i class="bi bi-chat"></i> Комментарий
+                        </label>
+                        <textarea asp-for="Comment" class="form-control" rows="3"
+                                  placeholder="Особые пожелания, время подачи и т.д."></textarea>
+                        <span asp-validation-for="Comment" class="text-danger"></span>
+                    </div>
+
+                    <!-- Информация о стоимости -->
+                    <div class="bg-light p-3 rounded mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <span class="text-muted">Стоимость услуги:</span>
+                                <span id="priceDisplay">0</span> ₽ ×
+                                <span id="quantityDisplay">1</span> =
+                                <span id="subtotalDisplay">0</span> ₽
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h4 class="mb-0" style="color: #721e1e;">
+                                    Итого: <span id="totalDisplay">0</span> ₽
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i>
+                        Услуга будет добавлена к вашему счету. Оплата производится при выселении.
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/PublicHome/Index" class="action-btn action-btn-outline">
+                            <i class="bi bi-arrow-left"></i> Отмена
+                        </a>
+                        <button type="submit" class="action-btn">
+                            <i class="bi bi-cart-check"></i> Заказать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Данные услуг
+    const services = {
+        1: { name: "Завтрак", price: 500 },
+        2: { name: "Обед", price: 800 },
+        3: { name: "Ужин", price: 1000 },
+        4: { name: "Прачечная", price: 300 },
+        5: { name: "Химчистка", price: 500 },
+        6: { name: "Трансфер", price: 1500 },
+        7: { name: "Экскурсия", price: 2000 },
+        8: { name: "СПА", price: 2500 },
+        9: { name: "Тренажерный зал", price: 500 },
+        10: { name: "Парковка", price: 300 }
+    };
+
+    // Сохраняем выбранную услугу
+    let selectedPrice = 0;
+
+    // Элементы
+    const serviceSelect = document.getElementById('serviceSelect');
+    const quantityInput = document.getElementById('quantity');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const quantityDisplay = document.getElementById('quantityDisplay');
+    const subtotalDisplay = document.getElementById('subtotalDisplay');
+    const totalDisplay = document.getElementById('totalDisplay');
+
+    // Функция обновления цены
+    function updatePrice() {
+        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+        const price = selectedOption && selectedOption.value
+            ? parseInt(selectedOption.getAttribute('data-price'))
+            : 0;
+
+        selectedPrice = price;
+
+        const quantity = parseInt(quantityInput.value) || 1;
+        const subtotal = price * quantity;
+
+        priceDisplay.textContent = price.toLocaleString('ru-RU');
+        quantityDisplay.textContent = quantity;
+        subtotalDisplay.textContent = subtotal.toLocaleString('ru-RU');
+        totalDisplay.textContent = subtotal.toLocaleString('ru-RU');
+    }
+
+    // Установка минимальной даты
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('OrderDate');
+    if (dateInput) {
+        dateInput.min = today;
+        dateInput.value = today;
+    }
+
+    // Обработчики событий
+    serviceSelect.addEventListener('change', updatePrice);
+    quantityInput.addEventListener('input', updatePrice);
+
+    // Начальный расчет
+    updatePrice();
+</script>

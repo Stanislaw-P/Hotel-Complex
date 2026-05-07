@@ -1,0 +1,121 @@
+﻿<!-- Views/ServiceOrder/Index.cshtml -->
+@{
+    ViewData["Title"] = "Дополнительные услуги";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="container py-4">
+    <h2 class="section-title text-center mb-4">
+        <i class="bi bi-grid"></i> Дополнительные услуги
+    </h2>
+    <p class="text-center text-muted mb-5">Сделайте ваш отдых еще комфортнее</p>
+
+    <div class="row">
+        <!-- Питание -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-cup-hot" style="font-size: 3rem; color: #721e1e;"></i>
+                    </div>
+                    <h4 class="text-center mb-3" style="color: #721e1e;">Питание</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Завтрак – 500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Обед – 800 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Ужин – 1000 ₽</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Услуги прачечной -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-journal-bookmark-fill" style="font-size: 3rem; color: #721e1e;"></i>
+                    </div>
+                    <h4 class="text-center mb-3" style="color: #721e1e;">Прачечная</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Стирка – 300 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Химчистка – 500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Глажка – 200 ₽</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Трансфер -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-car-front-fill" style="font-size: 3rem; color: #721e1e;"></i>
+                    </div>
+                    <h4 class="text-center mb-3" style="color: #721e1e;">Трансфер</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Аэропорт → Отель – 1500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Отель → Аэропорт – 1500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Экскурсии – от 2000 ₽</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SPA -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-flower1" style="font-size: 3rem; color: #721e1e;"></i>
+                    </div>
+                    <h4 class="text-center mb-3" style="color: #721e1e;">СПА</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Массаж – 2500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Сауна – 1500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Бассейн – 1000 ₽</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Спорт -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-dumbbell-fill" style="font-size: 3rem; color: #721e1e;"></i>
+                    </div>
+                    <h4 class="text-center mb-3" style="color: #721e1e;">Спорт</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Тренажерный зал – 500 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Йога – 400 ₽</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Теннис – 600 ₽</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Парковка -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="feature-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-p-square-fill" style="font-size: 3rem; color: #721e1e;"></i>
+                    </div>
+                    <h4 class="text-center mb-3" style="color: #721e1e;">Парковка</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> Охраняемая парковка – 300 ₽/день</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i> VIP парковка – 500 ₽/день</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="/ServiceOrder/Create" class="action-btn">
+            <i class="bi bi-cart-plus"></i> Заказать услугу
+        </a>
+    </div>
+</div>
