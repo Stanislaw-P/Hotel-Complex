@@ -1,0 +1,284 @@
+﻿@{
+    ViewData["Title"] = "Оформление бронирования";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="quick-actions-card">
+                <h2 class="quick-actions-title text-center">
+                    <i class="bi bi-pencil-square"></i> Оформление бронирования
+                </h2>
+
+                <!-- Информация о номере -->
+                <div class="alert alert-info mb-4" style="background: #e8f4f8; border: none; border-radius: 15px;">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h4 class="mb-2" style="color: #721e1e;">
+                                <i class="bi bi-door-open"></i> Номер №101
+                            </h4>
+                            <p class="mb-1"><strong>Тип:</strong> Стандарт</p>
+                            <p class="mb-1"><strong>Вместимость:</strong> 2 чел.</p>
+                            <p class="mb-0"><strong>Описание:</strong> Уютный стандартный номер с видом на горы</p>
+                        </div>
+                        <div class="col-md-5 text-md-end">
+                            <div class="p-3 rounded" style="background: rgba(114, 30, 30, 0.1);">
+                                <small class="text-muted">Цена за сутки</small>
+                                <h3 class="mb-0" style="color: #721e1e;">2 500 ₽</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Форма бронирования -->
+                <form id="bookingForm">
+                    <div class="row">
+                        <!-- Даты -->
+                        <div class="col-md-6 mb-3">
+                            <label for="CheckInDate" class="form-label fw-bold">
+                                <i class="bi bi-calendar-check"></i> Дата заезда
+                            </label>
+                            <input type="date" id="CheckInDate" name="CheckInDate" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="CheckOutDate" class="form-label fw-bold">
+                                <i class="bi bi-calendar-x"></i> Дата выезда
+                            </label>
+                            <input type="date" id="CheckOutDate" name="CheckOutDate" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <!-- Личные данные -->
+                    <h5 class="mt-4 mb-3" style="color: #721e1e;">
+                        <i class="bi bi-person-badge"></i> Личные данные
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="LastName" class="form-label fw-bold">Фамилия <span class="text-danger">*</span></label>
+                            <input type="text" id="LastName" class="form-control" placeholder="Иванов" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="FirstName" class="form-label fw-bold">Имя <span class="text-danger">*</span></label>
+                            <input type="text" id="FirstName" class="form-control" placeholder="Иван" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="MiddleName" class="form-label">Отчество</label>
+                            <input type="text" id="MiddleName" class="form-control" placeholder="Иванович" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="PassportSeries" class="form-label fw-bold">Серия паспорта <span class="text-danger">*</span></label>
+                            <input type="text" id="PassportSeries" class="form-control" placeholder="1234" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="PassportNumber" class="form-label fw-bold">Номер паспорта <span class="text-danger">*</span></label>
+                            <input type="text" id="PassportNumber" class="form-control" placeholder="567890" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Phone" class="form-label fw-bold">Телефон <span class="text-danger">*</span></label>
+                            <input type="tel" id="Phone" class="form-control" placeholder="+7 (999) 123-45-67" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Email" class="form-label">Email</label>
+                            <input type="email" id="Email" class="form-control" placeholder="ivanov@mail.com" />
+                        </div>
+                    </div>
+
+                    <!-- Детали стоимости -->
+                    <div class="bg-light p-3 rounded mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <span class="text-muted">Стоимость проживания:</span>
+                                <span id="pricePerNightDisplay">2 500</span> ₽ ×
+                                <span id="nightsCount">1</span> ночь
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h4 class="mb-0" style="color: #721e1e;">
+                                    Итого: <span id="totalPrice">2 500</span> ₽
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Дополнительные услуги -->
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #721e1e;">
+                            <i class="bi bi-grid"></i> Дополнительные услуги
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="500" id="serviceBreakfast">
+                                    <label class="form-check-label" for="serviceBreakfast">
+                                        Завтрак <span class="text-muted">(+500 ₽/день)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="800" id="serviceDinner">
+                                    <label class="form-check-label" for="serviceDinner">
+                                        Ужин <span class="text-muted">(+800 ₽/день)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="300" id="serviceParking">
+                                    <label class="form-check-label" for="serviceParking">
+                                        Парковка <span class="text-muted">(+300 ₽/день)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="500" id="serviceTransfer">
+                                    <label class="form-check-label" for="serviceTransfer">
+                                        Трансфер <span class="text-muted">(+500 ₽/день)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i>
+                        После оформления бронирования с вами свяжется наш менеджер для подтверждения.
+                        Предоплата не требуется.
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/PublicBooking" class="action-btn action-btn-outline">
+                            <i class="bi bi-arrow-left"></i> Назад к выбору
+                        </a>
+                        <button type="button" class="action-btn" onclick="showSuccessModal()">
+                            <i class="bi bi-check-circle"></i> Забронировать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно успеха -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #28a745; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle-fill"></i> Бронирование успешно!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-emoji-smile" style="font-size: 4rem; color: #28a745;"></i>
+                <h4 class="mt-3">Спасибо за бронирование!</h4>
+                <p>Ваш номер успешно забронирован. Наш менеджер свяжется с вами для подтверждения.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn action-btn-outline" data-bs-dismiss="modal">
+                    Закрыть
+                </button>
+                <a href="/PublicBooking" class="action-btn">
+                    Новое бронирование
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Цена за сутки
+    var pricePerNight = 2500;
+
+    // Установка минимальных дат
+    var today = new Date().toISOString().split('T')[0];
+    var checkInInput = document.getElementById('CheckInDate');
+    var checkOutInput = document.getElementById('CheckOutDate');
+
+    if (checkInInput) {
+        checkInInput.value = today;
+        checkInInput.min = today;
+
+        checkInInput.addEventListener('change', function() {
+            checkOutInput.min = this.value;
+            if (checkOutInput.value <= this.value) {
+                checkOutInput.value = this.value;
+            }
+            updateTotalPrice();
+        });
+    }
+
+    if (checkOutInput) {
+        checkOutInput.value = today;
+        checkOutInput.min = today;
+
+        checkOutInput.addEventListener('change', function() {
+            updateTotalPrice();
+        });
+    }
+
+    // Расчет стоимости
+    function updateTotalPrice() {
+        if (!checkInInput || !checkOutInput) return;
+
+        var checkIn = new Date(checkInInput.value);
+        var checkOut = new Date(checkOutInput.value);
+
+        if (checkIn && checkOut && checkOut > checkIn) {
+            var nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            var roomPrice = pricePerNight * nights;
+
+            // Дополнительные услуги
+            var servicesPrice = 0;
+            var services = ['serviceBreakfast', 'serviceDinner', 'serviceParking', 'serviceTransfer'];
+
+            for (var i = 0; i < services.length; i++) {
+                var service = document.getElementById(services[i]);
+                if (service && service.checked) {
+                    servicesPrice += parseInt(service.value) * nights;
+                }
+            }
+
+            var total = roomPrice + servicesPrice;
+
+            var nightsSpan = document.getElementById('nightsCount');
+            var priceSpan = document.getElementById('pricePerNightDisplay');
+            var totalSpan = document.getElementById('totalPrice');
+
+            // Склонение слова "ночь"
+            var nightText = 'ночей';
+            if (nights === 1) nightText = 'ночь';
+            else if (nights >= 2 && nights <= 4) nightText = 'ночи';
+
+            if (nightsSpan) nightsSpan.innerHTML = nights + ' ' + nightText;
+            if (priceSpan) priceSpan.innerHTML = pricePerNight.toLocaleString('ru-RU');
+            if (totalSpan) totalSpan.innerHTML = total.toLocaleString('ru-RU');
+        }
+    }
+
+    // Показать модальное окно
+    function showSuccessModal() {
+        var modalElement = document.getElementById('successModal');
+        if (modalElement) {
+            var successModal = new bootstrap.Modal(modalElement);
+            successModal.show();
+        }
+    }
+
+    // Инициализация
+    updateTotalPrice();
+</script>
