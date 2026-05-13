@@ -1,0 +1,375 @@
+﻿@{
+    ViewData["Title"] = "Добавление номера";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="quick-actions-card">
+                <h2 class="quick-actions-title">
+                    <i class="bi bi-door-open"></i> Добавление нового номера
+                </h2>
+
+                <form id="roomForm" onsubmit="return submitForm(event)">
+                    <!-- Основная информация -->
+                    <h5 class="mb-3" style="color: #721e1e;">
+                        <i class="bi bi-info-circle"></i> Основная информация
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="RoomNumber" class="form-label fw-bold">
+                                Номер комнаты <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" id="RoomNumber" class="form-control" placeholder="101" min="1" max="9999" required />
+                            <div class="invalid-feedback">Введите номер комнаты</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Floor" class="form-label fw-bold">
+                                Этаж <span class="text-danger">*</span>
+                            </label>
+                            <select id="Floor" class="form-select" required>
+                                <option value="">-- Выберите этаж --</option>
+                                <option value="1">1 этаж</option>
+                                <option value="2">2 этаж</option>
+                                <option value="3">3 этаж</option>
+                                <option value="4">4 этаж</option>
+                                <option value="5">5 этаж</option>
+                            </select>
+                            <div class="invalid-feedback">Выберите этаж</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="RoomTypeId" class="form-label fw-bold">
+                                Тип номера <span class="text-danger">*</span>
+                            </label>
+                            <select id="RoomTypeId" class="form-select" required>
+                                <option value="">-- Выберите тип --</option>
+                                <option value="1" data-price="2500">Стандарт (2 500 ₽/сутки)</option>
+                                <option value="2" data-price="3000">Стандарт+ (3 000 ₽/сутки)</option>
+                                <option value="3" data-price="4000">Полулюкс (4 000 ₽/сутки)</option>
+                                <option value="4" data-price="4500">Полулюкс+ (4 500 ₽/сутки)</option>
+                                <option value="5" data-price="6500">Люкс (6 500 ₽/сутки)</option>
+                                <option value="6" data-price="7000">Люкс+ (7 000 ₽/сутки)</option>
+                                <option value="7" data-price="10000">Апартаменты (10 000 ₽/сутки)</option>
+                                <option value="8" data-price="12000">Президентские апартаменты (12 000 ₽/сутки)</option>
+                            </select>
+                            <div class="invalid-feedback">Выберите тип номера</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Capacity" class="form-label fw-bold">
+                                Вместимость <span class="text-danger">*</span>
+                            </label>
+                            <select id="Capacity" class="form-select" required>
+                                <option value="">-- Выберите вместимость --</option>
+                                <option value="1">1 человек</option>
+                                <option value="2">2 человека</option>
+                                <option value="3">3 человека</option>
+                                <option value="4">4 человека</option>
+                                <option value="5">5 человек</option>
+                                <option value="6">6 человек</option>
+                            </select>
+                            <div class="invalid-feedback">Выберите вместимость</div>
+                        </div>
+                    </div>
+
+                    <!-- Цена и статус -->
+                    <h5 class="mt-4 mb-3" style="color: #721e1e;">
+                        <i class="bi bi-currency-dollar"></i> Цена и статус
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="BasePrice" class="form-label fw-bold">
+                                Базовая цена (₽/сутки) <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" id="BasePrice" class="form-control" step="100" min="500" value="2500" required />
+                            <div class="invalid-feedback">Введите цену (минимум 500 ₽)</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Status" class="form-label fw-bold">Статус</label>
+                            <select id="Status" class="form-select">
+                                <option value="free" selected>Свободен</option>
+                                <option value="occupied">Занят</option>
+                                <option value="cleaning">На уборке</option>
+                                <option value="repair">На ремонте</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Описание и удобства -->
+                    <h5 class="mt-4 mb-3" style="color: #721e1e;">
+                        <i class="bi bi-card-text"></i> Описание и удобства
+                    </h5>
+
+                    <div class="mb-3">
+                        <label for="Description" class="form-label fw-bold">Описание номера</label>
+                        <textarea id="Description" class="form-control" rows="3"
+                                  placeholder="Укажите особенности номера, вид из окна и т.д."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Удобства в номере</label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="wifi" id="amenityWifi" checked>
+                                        <label class="form-check-label" for="amenityWifi">
+                                            <i class="bi bi-wifi"></i> Wi-Fi
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="tv" id="amenityTv" checked>
+                                        <label class="form-check-label" for="amenityTv">
+                                            <i class="bi bi-tv"></i> Телевизор
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="shower" id="amenityShower" checked>
+                                        <label class="form-check-label" for="amenityShower">
+                                            <i class="bi bi-droplet"></i> Душ
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="ac" id="amenityAc" checked>
+                                        <label class="form-check-label" for="amenityAc">
+                                            <i class="bi bi-snow"></i> Кондиционер
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="fridge" id="amenityFridge">
+                                        <label class="form-check-label" for="amenityFridge">
+                                            <i class="bi bi-thermometer"></i> Холодильник
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="safe" id="amenitySafe">
+                                        <label class="form-check-label" for="amenitySafe">
+                                            <i class="bi bi-shield-lock"></i> Сейф
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="balcony" id="amenityBalcony">
+                                        <label class="form-check-label" for="amenityBalcony">
+                                            <i class="bi bi-tree"></i> Балкон
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="jacuzzi" id="amenityJacuzzi">
+                                        <label class="form-check-label" for="amenityJacuzzi">
+                                            <i class="bi bi-water"></i> Джакузи
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Предупреждение о дубликате -->
+                    <div class="alert alert-warning" id="duplicateWarning" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Номер с таким номером уже существует в системе!
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Поля, отмеченные звездочкой (<span class="text-danger">*</span>), обязательны для заполнения.
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/Admin/Rooms/Index" class="action-btn action-btn-outline">
+                            <i class="bi bi-arrow-left"></i> Отмена
+                        </a>
+                        <button type="submit" class="action-btn">
+                            <i class="bi bi-save"></i> Сохранить номер
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно успеха -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #28a745; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle-fill"></i> Успех!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-door-open" style="font-size: 4rem; color: #28a745;"></i>
+                <h4 class="mt-3">Номер успешно добавлен!</h4>
+                <div id="successMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn action-btn-outline" data-bs-dismiss="modal">
+                    Продолжить
+                </button>
+                <a href="/Admin/Rooms/Index" class="action-btn">
+                    К списку номеров
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Существующие номера для проверки дубликатов
+    const existingRooms = [101, 102, 103, 104, 201, 202, 203, 204, 301, 302, 401, 402];
+
+    // Автоматическая установка цены при выборе типа
+    document.getElementById('RoomTypeId').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+        if (price) {
+            document.getElementById('BasePrice').value = price;
+        }
+    });
+
+    // Проверка на дубликат
+    function checkDuplicate() {
+        const roomNumber = parseInt(document.getElementById('RoomNumber').value);
+        const warning = document.getElementById('duplicateWarning');
+
+        if (roomNumber && existingRooms.includes(roomNumber)) {
+            warning.style.display = 'block';
+            return true;
+        } else {
+            warning.style.display = 'none';
+            return false;
+        }
+    }
+
+    document.getElementById('RoomNumber').addEventListener('input', checkDuplicate);
+
+    function validateForm() {
+        let isValid = true;
+
+        // Номер комнаты
+        const roomNumber = document.getElementById('RoomNumber');
+        if (!roomNumber.value || roomNumber.value < 1) {
+            roomNumber.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            roomNumber.classList.remove('is-invalid');
+        }
+
+        // Этаж
+        const floor = document.getElementById('Floor');
+        if (!floor.value) {
+            floor.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            floor.classList.remove('is-invalid');
+        }
+
+        // Тип номера
+        const roomType = document.getElementById('RoomTypeId');
+        if (!roomType.value) {
+            roomType.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            roomType.classList.remove('is-invalid');
+        }
+
+        // Вместимость
+        const capacity = document.getElementById('Capacity');
+        if (!capacity.value) {
+            capacity.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            capacity.classList.remove('is-invalid');
+        }
+
+        // Цена
+        const basePrice = document.getElementById('BasePrice');
+        if (!basePrice.value || basePrice.value < 500) {
+            basePrice.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            basePrice.classList.remove('is-invalid');
+        }
+
+        // Проверка дубликата
+        if (checkDuplicate()) {
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function submitForm(event) {
+        event.preventDefault();
+
+        if (!validateForm()) {
+            return false;
+        }
+
+        // Собираем данные
+        const roomNumber = document.getElementById('RoomNumber').value;
+        const floor = document.getElementById('Floor').options[document.getElementById('Floor').selectedIndex]?.text;
+        const roomTypeSelect = document.getElementById('RoomTypeId');
+        const roomType = roomTypeSelect.options[roomTypeSelect.selectedIndex]?.text.split(' (')[0];
+        const capacity = document.getElementById('Capacity').options[document.getElementById('Capacity').selectedIndex]?.text;
+        const basePrice = document.getElementById('BasePrice').value;
+        const status = document.getElementById('Status').options[document.getElementById('Status').selectedIndex]?.text;
+        const description = document.getElementById('Description').value || '—';
+
+        // Собираем удобства
+        const amenities = [];
+        if (document.getElementById('amenityWifi').checked) amenities.push('Wi-Fi');
+        if (document.getElementById('amenityTv').checked) amenities.push('Телевизор');
+        if (document.getElementById('amenityShower').checked) amenities.push('Душ');
+        if (document.getElementById('amenityAc').checked) amenities.push('Кондиционер');
+        if (document.getElementById('amenityFridge').checked) amenities.push('Холодильник');
+        if (document.getElementById('amenitySafe').checked) amenities.push('Сейф');
+        if (document.getElementById('amenityBalcony').checked) amenities.push('Балкон');
+        if (document.getElementById('amenityJacuzzi').checked) amenities.push('Джакузи');
+
+        const amenitiesText = amenities.join(', ') || '—';
+
+        // Формируем сообщение
+        const message = `
+            <strong>Номер №${roomNumber}</strong><br>
+            <small>Этаж: ${floor}</small><br>
+            <small>Тип: ${roomType}</small><br>
+            <small>Вместимость: ${capacity}</small><br>
+            <small>Цена: ${parseInt(basePrice).toLocaleString('ru-RU')} ₽/сутки</small><br>
+            <small>Статус: ${status}</small><br>
+            <small>Удобства: ${amenitiesText}</small>
+        `;
+
+        document.getElementById('successMessage').innerHTML = message;
+
+        // Показываем модальное окно
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+
+        return false;
+    }
+</script>

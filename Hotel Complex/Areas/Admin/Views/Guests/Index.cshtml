@@ -1,0 +1,407 @@
+﻿@{
+    ViewData["Title"] = "Управление гостями";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Статические данные гостей -->
+@{
+    var guests = new[]
+    {
+        new { Id = 1, LastName = "Иванов", FirstName = "Иван", MiddleName = "Иванович", PassportSeries = "1234", PassportNumber = "567890", Phone = "+7 (999) 123-45-67", Email = "ivanov@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-10", BookingsCount = 2 },
+        new { Id = 2, LastName = "Петрова", FirstName = "Анна", MiddleName = "Сергеевна", PassportSeries = "5678", PassportNumber = "123456", Phone = "+7 (999) 234-56-78", Email = "petrova@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-12", BookingsCount = 1 },
+        new { Id = 3, LastName = "Сидоров", FirstName = "Алексей", MiddleName = "Владимирович", PassportSeries = "9012", PassportNumber = "345678", Phone = "+7 (999) 345-67-89", Email = "sidorov@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-15", BookingsCount = 3 },
+        new { Id = 4, LastName = "Козлова", FirstName = "Елена", MiddleName = "Дмитриевна", PassportSeries = "3456", PassportNumber = "789012", Phone = "+7 (999) 456-78-90", Email = "kozlova@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-18", BookingsCount = 1 },
+        new { Id = 5, LastName = "Смирнов", FirstName = "Дмитрий", MiddleName = "Андреевич", PassportSeries = "7890", PassportNumber = "123890", Phone = "+7 (999) 567-89-01", Email = "smirnov@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-20", BookingsCount = 2 },
+        new { Id = 6, LastName = "Морозова", FirstName = "Ольга", MiddleName = "Павловна", PassportSeries = "2345", PassportNumber = "678901", Phone = "+7 (999) 678-90-12", Email = "morozova@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-22", BookingsCount = 0 },
+        new { Id = 7, LastName = "Новиков", FirstName = "Павел", MiddleName = "Игоревич", PassportSeries = "6789", PassportNumber = "012345", Phone = "+7 (999) 789-01-23", Email = "novikov@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-25", BookingsCount = 1 },
+        new { Id = 8, LastName = "Федорова", FirstName = "Татьяна", MiddleName = "Алексеевна", PassportSeries = "4567", PassportNumber = "890123", Phone = "+7 (999) 890-12-34", Email = "fedorova@mail.ru", Citizenship = "РФ", CreatedAt = "2024-05-28", BookingsCount = 2 },
+        new { Id = 9, LastName = "Волков", FirstName = "Сергей", MiddleName = "Михайлович", PassportSeries = "8901", PassportNumber = "234567", Phone = "+7 (999) 901-23-45", Email = "volkov@mail.ru", Citizenship = "РФ", CreatedAt = "2024-06-01", BookingsCount = 1 },
+        new { Id = 10, LastName = "Зайцева", FirstName = "Мария", MiddleName = "Николаевна", PassportSeries = "1230", PassportNumber = "456789", Phone = "+7 (999) 012-34-56", Email = "zaytseva@mail.ru", Citizenship = "РФ", CreatedAt = "2024-06-05", BookingsCount = 0 }
+    };
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0">
+            <i class="bi bi-people-fill me-2"></i>Управление гостями
+        </h2>
+        <a href="/Admin/Guests/Create" class="action-btn">
+            <i class="bi bi-person-plus"></i> Добавить гостя
+        </a>
+    </div>
+
+    <!-- Карточки статистики -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-people"></i> Всего гостей
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">@guests.Length</div>
+                    <div class="stat-label">зарегистрировано</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-calendar-check"></i> Активные
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">@guests.Count(g => g.BookingsCount > 0)</div>
+                    <div class="stat-label">с бронированиями</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-star-fill"></i> Постоянные
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">@guests.Count(g => g.BookingsCount >= 2)</div>
+                    <div class="stat-label">2+ бронирований</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-calendar-week"></i> Новые
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">@guests.Count(g => g.CreatedAt.Contains("2024-06"))</div>
+                    <div class="stat-label">за последний месяц</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Поиск и фильтры -->
+    <div class="quick-actions-card mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-search"></i> Поиск
+                </label>
+                <input type="text" id="searchInput" class="form-control" placeholder="Фамилия, имя, телефон или email...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-funnel"></i> Фильтр по активности
+                </label>
+                <select id="filterSelect" class="form-select">
+                    <option value="all">Все гости</option>
+                    <option value="active">С бронированиями</option>
+                    <option value="inactive">Без бронирований</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-sort-down"></i> Сортировка
+                </label>
+                <select id="sortSelect" class="form-select">
+                    <option value="name">По фамилии (А-Я)</option>
+                    <option value="nameDesc">По фамилии (Я-А)</option>
+                    <option value="dateNew">Сначала новые</option>
+                    <option value="dateOld">Сначала старые</option>
+                    <option value="bookings">По количеству броней</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="action-btn-outline w-100" onclick="resetFilters()">
+                    <i class="bi bi-arrow-repeat"></i> Сбросить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица гостей -->
+    <div class="table-responsive">
+        <table class="table table-custom table-hover" id="guestsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ФИО</th>
+                    <th>Паспорт</th>
+                    <th>Телефон</th>
+                    <th>Email</th>
+                    <th>Бронирований</th>
+                    <th>Дата регистрации</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var guest in guests)
+                {
+                    <tr data-id="@guest.Id" data-name="@guest.LastName" data-phone="@guest.Phone" data-email="@guest.Email" data-bookings="@guest.BookingsCount" data-date="@guest.CreatedAt">
+                        <td>@guest.Id</td>
+                        <td>
+                            <strong>@guest.LastName @guest.FirstName @guest.MiddleName</strong>
+                            <br />
+                            <small class="text-muted">@guest.Citizenship</small>
+                        </td>
+                        <td>@guest.PassportSeries @guest.PassportNumber</td>
+                        <td>@guest.Phone</td>
+                        <td>@guest.Email</td>
+                        <td>
+                            <span class="badge" style="background: #721e1e; color: #e2d797;">
+                                @guest.BookingsCount броней
+                            </span>
+                        </td>
+                        <td>@DateTime.Parse(guest.CreatedAt).ToString("dd.MM.yyyy")</td>
+                        <td>
+                            <a href="/Admin/Guests/Details" class="btn btn-sm btn-info me-1" title="Просмотр">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="/Admin/Guests/Edit" class="btn btn-sm btn-warning me-1" title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger" title="Удалить" onclick="showDeleteModal(@guest.Id, '@guest.LastName @guest.FirstName')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination" id="pagination">
+                <!-- Пагинация будет добавлена через JS -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #dc3545; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить гостя <strong id="guestName"></strong>?</p>
+                <p class="text-danger">Это действие нельзя отменить. Все бронирования гостя также будут удалены.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn action-btn-outline" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="action-btn" style="background: #dc3545;" id="confirmDelete">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    // Инициализация данных
+    function initData() {
+        const rows = document.querySelectorAll('#guestsTable tbody tr');
+        currentData = Array.from(rows).map(row => ({
+            element: row,
+            id: parseInt(row.dataset.id),
+            name: row.dataset.name,
+            phone: row.dataset.phone,
+            email: row.dataset.email,
+            bookings: parseInt(row.dataset.bookings),
+            date: row.dataset.date
+        }));
+        filteredData = [...currentData];
+        updateTableDisplay();
+    }
+
+    // Обновление отображения таблицы
+    function updateTableDisplay() {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageData = filteredData.slice(start, end);
+
+        // Скрываем все строки
+        currentData.forEach(item => {
+            item.element.style.display = 'none';
+        });
+
+        // Показываем строки для текущей страницы
+        pageData.forEach(item => {
+            item.element.style.display = '';
+        });
+
+        updatePagination();
+    }
+
+    // Обновление пагинации
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+
+        // Previous
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">«</a>
+                </li>`;
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                        </li>`;
+            } else if (i === currentPage - 3 || i === currentPage + 3) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+
+        // Next
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">»</a>
+                </li>`;
+
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        updateTableDisplay();
+    }
+
+    // Поиск
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const filter = document.getElementById('filterSelect').value;
+
+        filteredData = currentData.filter(item => {
+            // Поиск
+            const matchesSearch = item.name.toLowerCase().includes(searchTerm) ||
+                                  item.phone.includes(searchTerm) ||
+                                  item.email.toLowerCase().includes(searchTerm);
+
+            // Фильтр
+            let matchesFilter = true;
+            if (filter === 'active') {
+                matchesFilter = item.bookings > 0;
+            } else if (filter === 'inactive') {
+                matchesFilter = item.bookings === 0;
+            }
+
+            return matchesSearch && matchesFilter;
+        });
+
+        // Сортировка
+        applySort();
+
+        currentPage = 1;
+        updateTableDisplay();
+    });
+
+    // Фильтр
+    document.getElementById('filterSelect').addEventListener('change', function() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filter = this.value;
+
+        filteredData = currentData.filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(searchTerm) ||
+                                  item.phone.includes(searchTerm) ||
+                                  item.email.toLowerCase().includes(searchTerm);
+
+            let matchesFilter = true;
+            if (filter === 'active') {
+                matchesFilter = item.bookings > 0;
+            } else if (filter === 'inactive') {
+                matchesFilter = item.bookings === 0;
+            }
+
+            return matchesSearch && matchesFilter;
+        });
+
+        applySort();
+        currentPage = 1;
+        updateTableDisplay();
+    });
+
+    // Сортировка
+    function applySort() {
+        const sortBy = document.getElementById('sortSelect').value;
+
+        filteredData.sort((a, b) => {
+            switch(sortBy) {
+                case 'name':
+                    return a.name.localeCompare(b.name);
+                case 'nameDesc':
+                    return b.name.localeCompare(a.name);
+                case 'dateNew':
+                    return new Date(b.date) - new Date(a.date);
+                case 'dateOld':
+                    return new Date(a.date) - new Date(b.date);
+                case 'bookings':
+                    return b.bookings - a.bookings;
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    document.getElementById('sortSelect').addEventListener('change', function() {
+        applySort();
+        currentPage = 1;
+        updateTableDisplay();
+    });
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterSelect').value = 'all';
+        document.getElementById('sortSelect').value = 'name';
+        filteredData = [...currentData];
+        applySort();
+        currentPage = 1;
+        updateTableDisplay();
+    }
+
+    // Удаление
+    let deleteId = null;
+
+    function showDeleteModal(id, name) {
+        deleteId = id;
+        document.getElementById('guestName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (deleteId) {
+            // Находим и удаляем строку
+            const row = document.querySelector(`#guestsTable tbody tr[data-id="${deleteId}"]`);
+            if (row) {
+                row.remove();
+                // Обновляем данные
+                initData();
+                resetFilters();
+            }
+        }
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        // Показываем уведомление
+        alert('Гость удален');
+    });
+
+    // Инициализация
+    initData();
+    resetFilters();
+</script>

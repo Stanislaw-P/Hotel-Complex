@@ -1,0 +1,384 @@
+﻿@{
+    ViewData["Title"] = "Статистика и отчеты";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Статические данные для статистики -->
+@{
+    // Данные по месяцам
+    var monthlyData = new[]
+    {
+        new { Month = "Янв", Bookings = 45, Revenue = 112500, Occupancy = 65 },
+        new { Month = "Фев", Bookings = 52, Revenue = 130000, Occupancy = 72 },
+        new { Month = "Мар", Bookings = 48, Revenue = 120000, Occupancy = 68 },
+        new { Month = "Апр", Bookings = 58, Revenue = 145000, Occupancy = 78 },
+        new { Month = "Май", Bookings = 72, Revenue = 180000, Occupancy = 85 },
+        new { Month = "Июн", Bookings = 68, Revenue = 170000, Occupancy = 82 }
+    };
+
+    // Топ услуг
+    var topServices = new[]
+    {
+        new { Name = "Завтрак", Orders = 145, Revenue = 72500 },
+        new { Name = "Ужин", Orders = 98, Revenue = 98000 },
+        new { Name = "СПА", Orders = 67, Revenue = 167500 },
+        new { Name = "Трансфер", Orders = 45, Revenue = 67500 },
+        new { Name = "Прачечная", Orders = 38, Revenue = 11400 }
+    };
+
+    // Загрузка по типам номеров
+    var roomTypeOccupancy = new[]
+    {
+        new { Type = "Стандарт", Total = 15, Occupied = 12, Percentage = 80 },
+        new { Type = "Полулюкс", Total = 10, Occupied = 8, Percentage = 80 },
+        new { Type = "Люкс", Total = 8, Occupied = 6, Percentage = 75 },
+        new { Type = "Апартаменты", Total = 6, Occupied = 4, Percentage = 67 }
+    };
+
+    // Последние действия
+    var recentActivities = new[]
+    {
+        new { Action = "Новое бронирование", User = "Администратор", Target = "Номер №301", Date = "2024-05-13 14:30", Icon = "calendar-plus" },
+        new { Action = "Регистрация гостя", User = "Менеджер", Target = "Иванов Иван", Date = "2024-05-13 11:15", Icon = "person-plus" },
+        new { Action = "Изменение статуса номера", User = "Администратор", Target = "Номер №204 → На ремонте", Date = "2024-05-13 09:45", Icon = "arrow-repeat" },
+        new { Action = "Заказ услуги", User = "Гость", Target = "СПА-процедура", Date = "2024-05-12 18:20", Icon = "cart-check" },
+        new { Action = "Выселение", User = "Менеджер", Target = "Номер №103", Date = "2024-05-12 12:00", Icon = "box-arrow-right" }
+    };
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0">
+            <i class="bi bi-graph-up"></i> Статистика и отчеты
+        </h2>
+        <div>
+            <button class="action-btn-outline me-2" onclick="window.print()">
+                <i class="bi bi-printer"></i> Печать
+            </button>
+            <button class="action-btn" onclick="exportData()">
+                <i class="bi bi-download"></i> Экспорт
+            </button>
+        </div>
+    </div>
+
+    <!-- Период отчета -->
+    <div class="quick-actions-card mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">С</label>
+                <input type="date" class="form-control" id="dateFrom" value="2024-01-01">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">По</label>
+                <input type="date" class="form-control" id="dateTo" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Период</label>
+                <select class="form-select" id="periodSelect">
+                    <option value="today">Сегодня</option>
+                    <option value="week">Эта неделя</option>
+                    <option value="month" selected>Этот месяц</option>
+                    <option value="quarter">Этот квартал</option>
+                    <option value="year">Этот год</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="action-btn w-100" onclick="updateReport()">
+                    <i class="bi bi-arrow-repeat"></i> Обновить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Главные показатели -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-calendar-check"></i> Бронирований
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">342</div>
+                    <div class="stat-label">всего</div>
+                    <small class="text-success">↑ 12% с прошлого месяца</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-currency-dollar"></i> Выручка
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">857 500 ₽</div>
+                    <div class="stat-label">всего</div>
+                    <small class="text-success">↑ 8% с прошлого месяца</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-percent"></i> Загрузка
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">78%</div>
+                    <div class="stat-label">средняя</div>
+                    <small class="text-success">↑ 5% с прошлого месяца</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-header">
+                    <i class="bi bi-star-fill"></i> Средний чек
+                </div>
+                <div class="card-body text-center">
+                    <div class="stat-number">2 507 ₽</div>
+                    <div class="stat-label">за ночь</div>
+                    <small class="text-success">↑ 3% с прошлого месяца</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="quick-actions-card">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-graph-up"></i> Динамика бронирований и выручки
+                </h4>
+                <canvas id="revenueChart" height="250"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="quick-actions-card">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-pie-chart"></i> Загрузка по типам номеров
+                </h4>
+                <canvas id="occupancyPieChart" height="200"></canvas>
+                <div class="mt-3">
+                    @foreach (var type in roomTypeOccupancy)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>@type.Type</span>
+                            <div class="progress flex-grow-1 mx-2" style="height: 8px;">
+                                <div class="progress-bar" style="width: @type.Percentage%; background: #721e1e;"></div>
+                            </div>
+                            <span>@type.Occupied/@type.Total</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительная статистика -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="quick-actions-card">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-cup-hot"></i> Топ популярных услуг
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Услуга</th>
+                                <th>Заказов</th>
+                                <th>Выручка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var service in topServices)
+                            {
+                                <tr>
+                                    <td>@service.Name</td>
+                                    <td>@service.Orders</td>
+                                    <td>@service.Revenue.ToString("N0") ₽</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="quick-actions-card">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-people"></i> Последние действия
+                </h4>
+                <div class="timeline">
+                    @foreach (var activity in recentActivities)
+                    {
+                        <div class="d-flex mb-3">
+                            <div class="me-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width: 40px; height: 40px; background: rgba(114, 30, 30, 0.1);">
+                                    <i class="bi bi-@activity.Icon" style="color: #721e1e;"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <strong>@activity.Action</strong>
+                                    <small class="text-muted">@activity.Date</small>
+                                </div>
+                                <p class="mb-0 text-muted small">@activity.User — @activity.Target</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Прогноз на следующий месяц -->
+    <div class="quick-actions-card">
+        <h4 class="quick-actions-title">
+            <i class="bi bi-graph-up"></i> Прогноз на следующий месяц
+        </h4>
+        <div class="row">
+            <div class="col-md-3 text-center">
+                <h5>Ожидаемая загрузка</h5>
+                <div class="display-4" style="color: #721e1e;">82%</div>
+                <small class="text-success">↑ 4%</small>
+            </div>
+            <div class="col-md-3 text-center">
+                <h5>Прогноз выручки</h5>
+                <div class="display-4" style="color: #721e1e;">950 000 ₽</div>
+                <small class="text-success">↑ 11%</small>
+            </div>
+            <div class="col-md-3 text-center">
+                <h5>Ожидаемое кол-во гостей</h5>
+                <div class="display-4" style="color: #721e1e;">280</div>
+                <small class="text-success">↑ 8%</small>
+            </div>
+            <div class="col-md-3 text-center">
+                <h5>Средний чек</h5>
+                <div class="display-4" style="color: #721e1e;">2 680 ₽</div>
+                <small class="text-success">↑ 7%</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключение Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let revenueChart = null;
+    let occupancyPieChart = null;
+
+    // Инициализация графиков
+    function initCharts() {
+        const ctx1 = document.getElementById('revenueChart').getContext('2d');
+        const ctx2 = document.getElementById('occupancyPieChart').getContext('2d');
+
+        const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'];
+        const bookings = [45, 52, 48, 58, 72, 68];
+        const revenue = [112500, 130000, 120000, 145000, 180000, 170000];
+
+        revenueChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Бронирования',
+                        data: bookings,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Выручка (тыс. ₽)',
+                        data: revenue.map(v => v / 1000),
+                        borderColor: '#721e1e',
+                        backgroundColor: 'rgba(114, 30, 30, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { title: { display: true, text: 'Количество броней' } },
+                    y1: { position: 'right', title: { display: true, text: 'Выручка (тыс. ₽)' }, grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+
+        occupancyPieChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Стандарт', 'Полулюкс', 'Люкс', 'Апартаменты'],
+                datasets: [{
+                    data: [80, 80, 75, 67],
+                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#6c757d'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    function updateReport() {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        // В реальном приложении здесь был бы запрос к серверу
+        alert(`Отчет за период: ${dateFrom} - ${dateTo}\nДанные будут загружены с сервера.`);
+    }
+
+    document.getElementById('periodSelect').addEventListener('change', function() {
+        const today = new Date();
+        let from, to;
+
+        switch(this.value) {
+            case 'today':
+                from = today;
+                to = today;
+                break;
+            case 'week':
+                from = new Date(today.setDate(today.getDate() - 7));
+                to = new Date();
+                break;
+            case 'month':
+                from = new Date(today.getFullYear(), today.getMonth(), 1);
+                to = new Date();
+                break;
+            case 'quarter':
+                const quarter = Math.floor(today.getMonth() / 3);
+                from = new Date(today.getFullYear(), quarter * 3, 1);
+                to = new Date();
+                break;
+            case 'year':
+                from = new Date(today.getFullYear(), 0, 1);
+                to = new Date();
+                break;
+        }
+
+        if (from) {
+            document.getElementById('dateFrom').value = from.toISOString().split('T')[0];
+            document.getElementById('dateTo').value = to.toISOString().split('T')[0];
+        }
+    });
+
+    function exportData() {
+        alert('Экспорт данных в Excel/PDF будет доступен в полной версии');
+    }
+
+    initCharts();
+</script>

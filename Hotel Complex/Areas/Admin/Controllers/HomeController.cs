@@ -2,8 +2,9 @@ using System.Diagnostics;
 using Hotel_Complex.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hotel_Complex.Controllers
+namespace Hotel_Complex.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

@@ -1,0 +1,314 @@
+﻿@{
+    ViewData["Title"] = "Детали бронирования";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@{
+    var booking = new
+    {
+        Id = 1001,
+        GuestId = 1,
+        GuestName = "Иванов Иван Иванович",
+        GuestPhone = "+7 (999) 123-45-67",
+        GuestEmail = "ivanov@mail.ru",
+        GuestPassport = "1234 567890",
+        RoomId = 101,
+        RoomNumber = 101,
+        RoomType = "Стандарт",
+        Floor = 1,
+        Capacity = 2,
+        PricePerNight = 2500,
+        CheckIn = "2024-05-10",
+        CheckOut = "2024-05-15",
+        Nights = 5,
+        TotalPrice = 12500,
+        Prepayment = 5000,
+        Status = "completed",
+        PartnerId = "",
+        PartnerName = "",
+        DiscountRate = 0,
+        CreatedAt = "2024-05-01",
+        CreatedBy = "Администратор",
+        Notes = "Просьба подготовить номер к 14:00"
+    };
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Заголовок -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-calendar-check"></i> Детали бронирования #@booking.Id
+                </h2>
+                <div>
+                    @if (booking.Status == "confirmed")
+                    {
+                        <button class="action-btn me-2" style="background: #dc3545;" onclick="cancelBooking()">
+                            <i class="bi bi-x-circle"></i> Отменить
+                        </button>
+                    }
+                    <a href="/Admin/Bookings/Edit/@booking.Id" class="action-btn me-2">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <a href="/Admin/Bookings/Index" class="action-btn action-btn-outline">
+                        <i class="bi bi-arrow-left"></i> Назад
+                    </a>
+                </div>
+            </div>
+
+            <!-- Статус баннер -->
+            <div class="alert mb-4" style="background: @(booking.Status == "confirmed" ? "#d4edda" : booking.Status == "completed" ? "#e2e3e5" : "#f8d7da"); border: none; border-radius: 15px;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Статус бронирования:</strong>
+                        @if (booking.Status == "confirmed")
+                        {
+                            <span class="badge bg-success ms-2">Подтверждено</span>
+                        }
+                        else if (booking.Status == "completed")
+                        {
+                            <span class="badge bg-secondary ms-2">Завершено</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger ms-2">Отменено</span>
+                        }
+                    </div>
+                    <div>
+                        <small>Создано: @DateTime.Parse(booking.CreatedAt).ToString("dd.MM.yyyy HH:mm")</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Информация о госте -->
+            <div class="quick-actions-card mb-4">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-person-circle"></i> Информация о госте
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 35%; color: #721e1e;">ФИО:</th>
+                                <td><strong>@booking.GuestName</strong></td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Телефон:</th>
+                                <td><a href="tel:@booking.GuestPhone">@booking.GuestPhone</a></td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Email:</th>
+                                <td><a href="mailto:@booking.GuestEmail">@booking.GuestEmail</a></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 35%; color: #721e1e;">Паспорт:</th>
+                                <td>@booking.GuestPassport</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">ID гостя:</th>
+                                <td><a href="/Admin/Guests/Details/@booking.GuestId">#@booking.GuestId</a></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Информация о номере -->
+            <div class="quick-actions-card mb-4">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-door-open"></i> Информация о номере
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 35%; color: #721e1e;">Номер:</th>
+                                <td>№@booking.RoomNumber</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Тип:</th>
+                                <td>@booking.RoomType</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Этаж:</th>
+                                <td>@booking.Floor</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 35%; color: #721e1e;">Вместимость:</th>
+                                <td>@booking.Capacity чел.</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Цена за сутки:</th>
+                                <td>@booking.PricePerNight.ToString("N0") ₽</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детали бронирования -->
+            <div class="quick-actions-card mb-4">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-calendar-range"></i> Детали бронирования
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 40%; color: #721e1e;">Дата заезда:</th>
+                                <td>@DateTime.Parse(booking.CheckIn).ToString("dd.MM.yyyy")</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Дата выезда:</th>
+                                <td>@DateTime.Parse(booking.CheckOut).ToString("dd.MM.yyyy")</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Количество ночей:</th>
+                                <td>@booking.Nights</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 40%; color: #721e1e;">Партнер:</th>
+                                <td>@(booking.PartnerName ?? "—")</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Скидка:</th>
+                                <td>@(booking.DiscountRate > 0 ? booking.DiscountRate + "%" : "—")</td>
+                            </tr>
+                            <tr>
+                                <th style="color: #721e1e;">Создал:</th>
+                                <td>@booking.CreatedBy</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Финансовая информация -->
+            <div class="quick-actions-card mb-4">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-currency-dollar"></i> Финансовая информация
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="bg-light p-3 rounded">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <small class="text-muted">Стоимость проживания</small>
+                                        <h5 class="mb-0">@booking.TotalPrice.ToString("N0") ₽</h5>
+                                        <small>@booking.PricePerNight.ToString("N0") ₽ × @booking.Nights ночей</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <small class="text-muted">Предоплата</small>
+                                        <h5 class="mb-0">@booking.Prepayment.ToString("N0") ₽</h5>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <small class="text-muted">Остаток к оплате</small>
+                                        <h5 class="mb-0" style="color: #721e1e;">@((booking.TotalPrice - booking.Prepayment).ToString("N0")) ₽</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Примечания -->
+            @if (!string.IsNullOrEmpty(booking.Notes))
+            {
+                <div class="quick-actions-card mb-4">
+                    <h4 class="quick-actions-title">
+                        <i class="bi bi-chat"></i> Примечания
+                    </h4>
+                    <p>@booking.Notes</p>
+                </div>
+            }
+
+            <!-- Действия -->
+            <div class="quick-actions-card">
+                <h4 class="quick-actions-title">
+                    <i class="bi bi-gear"></i> Действия
+                </h4>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="/Admin/Invoices/Create?bookingId=@booking.Id" class="action-btn w-100">
+                            <i class="bi bi-receipt"></i> Сформировать счет
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/Admin/Stays/Create?bookingId=@booking.Id" class="action-btn w-100">
+                            <i class="bi bi-person-walking"></i> Оформить заселение
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="action-btn-outline w-100" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Распечатать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно отмены -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #dc3545; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Отмена бронирования
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите отменить бронирование #@booking.Id для гостя <strong>@booking.GuestName</strong>?</p>
+                <p class="text-danger">Это действие нельзя отменить. Номер станет доступен для других гостей.</p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Причина отмены (необязательно)</label>
+                    <textarea id="cancelReason" class="form-control" rows="2" placeholder="Укажите причину отмены..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn action-btn-outline" data-bs-dismiss="modal">Нет, закрыть</button>
+                <button type="button" class="action-btn" style="background: #dc3545;" id="confirmCancel">Да, отменить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function cancelBooking() {
+        new bootstrap.Modal(document.getElementById('cancelModal')).show();
+    }
+
+    document.getElementById('confirmCancel').addEventListener('click', function() {
+        const reason = document.getElementById('cancelReason').value;
+        alert(`Бронирование #@booking.Id отменено${reason ? '\nПричина: ' + reason : ''}`);
+        bootstrap.Modal.getInstance(document.getElementById('cancelModal')).hide();
+        window.location.href = '/Admin/Bookings/Index';
+    });
+</script>

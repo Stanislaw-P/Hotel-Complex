@@ -12,4 +12,8 @@
     <ProjectReference Include="..\HotelComplex.Db\HotelComplex.Db.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Models\" />
+  </ItemGroup>
+
 </Project>

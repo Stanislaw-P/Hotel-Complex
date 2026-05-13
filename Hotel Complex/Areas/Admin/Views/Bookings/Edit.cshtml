@@ -1,0 +1,425 @@
+﻿@{
+    ViewData["Title"] = "Редактирование бронирования";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Получаем ID бронирования из URL -->
+@{
+    var booking = new
+    {
+        Id = 1001,
+        GuestId = 1,
+        GuestName = "Иванов Иван Иванович",
+        GuestPhone = "+7 (999) 123-45-67",
+        RoomId = 101,
+        RoomNumber = 101,
+        RoomType = "Стандарт",
+        PricePerNight = 2500,
+        CheckIn = "2024-05-10",
+        CheckOut = "2024-05-15",
+        Prepayment = 5000,
+        Status = "confirmed",
+        PartnerId = "",
+        DiscountRate = 0,
+        Notes = "Просьба подготовить номер к 14:00"
+    };
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="quick-actions-card">
+                <h2 class="quick-actions-title">
+                    <i class="bi bi-pencil-square"></i> Редактирование бронирования #@booking.Id
+                </h2>
+
+                <form id="bookingForm" onsubmit="return submitForm(event)">
+                    <input type="hidden" id="BookingId" value="@booking.Id" />
+
+                    <!-- Выбор гостя -->
+                    <h5 class="mb-3" style="color: #721e1e;">
+                        <i class="bi bi-person"></i> Выбор гостя
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="GuestId" class="form-label fw-bold">
+                                Гость <span class="text-danger">*</span>
+                            </label>
+                            <select id="GuestId" class="form-select" required>
+                                <option value="">-- Выберите гостя --</option>
+                                <option value="1" @(booking.GuestId == 1 ? "selected" : "")>Иванов Иван Иванович (тел: +7 (999) 123-45-67)</option>
+                                <option value="2" @(booking.GuestId == 2 ? "selected" : "")>Петрова Анна Сергеевна (тел: +7 (999) 234-56-78)</option>
+                                <option value="3" @(booking.GuestId == 3 ? "selected" : "")>Сидоров Алексей Владимирович (тел: +7 (999) 345-67-89)</option>
+                                <option value="4" @(booking.GuestId == 4 ? "selected" : "")>Козлова Елена Дмитриевна (тел: +7 (999) 456-78-90)</option>
+                                <option value="5" @(booking.GuestId == 5 ? "selected" : "")>Смирнов Дмитрий Андреевич (тел: +7 (999) 567-89-01)</option>
+                            </select>
+                            <div class="invalid-feedback">Выберите гостя</div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <a href="/Admin/Guests/Create" class="action-btn-outline w-100 text-center" style="display: block;">
+                                <i class="bi bi-person-plus"></i> Новый гость
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Выбор номера и дат -->
+                    <h5 class="mt-4 mb-3" style="color: #721e1e;">
+                        <i class="bi bi-door-open"></i> Выбор номера и дат
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="RoomId" class="form-label fw-bold">
+                                Номер <span class="text-danger">*</span>
+                            </label>
+                            <select id="RoomId" class="form-select" required>
+                                <option value="">-- Выберите номер --</option>
+                                <option value="101" data-price="2500" @(booking.RoomId == 101 ? "selected" : "")>№101 - Стандарт (2 500 ₽/сутки)</option>
+                                <option value="102" data-price="2500" @(booking.RoomId == 102 ? "selected" : "")>№102 - Стандарт (2 500 ₽/сутки)</option>
+                                <option value="103" data-price="3000" @(booking.RoomId == 103 ? "selected" : "")>№103 - Стандарт+ (3 000 ₽/сутки)</option>
+                                <option value="201" data-price="4000" @(booking.RoomId == 201 ? "selected" : "")>№201 - Полулюкс (4 000 ₽/сутки)</option>
+                                <option value="202" data-price="4000" @(booking.RoomId == 202 ? "selected" : "")>№202 - Полулюкс (4 000 ₽/сутки)</option>
+                                <option value="203" data-price="4500" @(booking.RoomId == 203 ? "selected" : "")>№203 - Полулюкс+ (4 500 ₽/сутки)</option>
+                                <option value="301" data-price="6500" @(booking.RoomId == 301 ? "selected" : "")>№301 - Люкс (6 500 ₽/сутки)</option>
+                                <option value="302" data-price="7000" @(booking.RoomId == 302 ? "selected" : "")>№302 - Люкс (7 000 ₽/сутки)</option>
+                                <option value="401" data-price="10000" @(booking.RoomId == 401 ? "selected" : "")>№401 - Апартаменты (10 000 ₽/сутки)</option>
+                                <option value="402" data-price="12000" @(booking.RoomId == 402 ? "selected" : "")>№402 - Апартаменты (12 000 ₽/сутки)</option>
+                            </select>
+                            <div class="invalid-feedback">Выберите номер</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info" id="roomInfo" style="display: none;">
+                                <i class="bi bi-info-circle"></i>
+                                <span id="roomInfoText"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="CheckInDate" class="form-label fw-bold">
+                                <i class="bi bi-calendar-check"></i> Дата заезда <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="CheckInDate" class="form-control" value="@booking.CheckIn" required />
+                            <div class="invalid-feedback">Укажите дату заезда</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="CheckOutDate" class="form-label fw-bold">
+                                <i class="bi bi-calendar-x"></i> Дата выезда <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="CheckOutDate" class="form-control" value="@booking.CheckOut" required />
+                            <div class="invalid-feedback">Дата выезда должна быть позже даты заезда</div>
+                        </div>
+                    </div>
+
+                    <!-- Корпоративный партнер -->
+                    <h5 class="mt-4 mb-3" style="color: #721e1e;">
+                        <i class="bi bi-building"></i> Корпоративный партнер
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="PartnerId" class="form-label">Корпоративный партнер</label>
+                            <select id="PartnerId" class="form-select">
+                                <option value="">-- Без партнера --</option>
+                                <option value="1" @(booking.PartnerId == "1" ? "selected" : "")>ООО "Рога и Копыта" (скидка 5%)</option>
+                                <option value="2" @(booking.PartnerId == "2" ? "selected" : "")>ЗАО "ТехноПром" (скидка 10%)</option>
+                                <option value="3" @(booking.PartnerId == "3" ? "selected" : "")>АО "БизнесТревел" (скидка 15%)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Status" class="form-label fw-bold">Статус бронирования</label>
+                            <select id="Status" class="form-select">
+                                <option value="confirmed" @(booking.Status == "confirmed" ? "selected" : "")>Подтверждено</option>
+                                <option value="completed" @(booking.Status == "completed" ? "selected" : "")>Завершено</option>
+                                <option value="cancelled" @(booking.Status == "cancelled" ? "selected" : "")>Отменено</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Финансовая информация -->
+                    <h5 class="mt-4 mb-3" style="color: #721e1e;">
+                        <i class="bi bi-currency-dollar"></i> Финансовая информация
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Prepayment" class="form-label fw-bold">Предоплата (₽)</label>
+                            <input type="number" id="Prepayment" class="form-control" step="100" min="0" value="@booking.Prepayment" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="DiscountRate" class="form-label">Скидка (%)</label>
+                            <input type="number" id="DiscountRate" class="form-control" step="1" min="0" max="100" value="@booking.DiscountRate" readonly />
+                        </div>
+                    </div>
+
+                    <!-- Примечания -->
+                    <div class="mb-3">
+                        <label for="Notes" class="form-label">Примечания</label>
+                        <textarea id="Notes" class="form-control" rows="3" placeholder="Особые пожелания, заметки...">@booking.Notes</textarea>
+                    </div>
+
+                    <!-- Детали стоимости -->
+                    <div class="bg-light p-3 rounded mb-4" id="priceDetails">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <span class="text-muted">Стоимость проживания:</span>
+                                <span id="pricePerNightDisplay">@booking.PricePerNight</span> ₽ ×
+                                <span id="nightsCount">0</span> ночей
+                                <span id="discountSpan" style="display: @(booking.DiscountRate > 0 ? "inline" : "none");">
+                                    (скидка <span id="discountRate">@booking.DiscountRate</span>%)
+                                </span>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h4 class="mb-0" style="color: #721e1e;">
+                                    Итого: <span id="totalPrice">0</span> ₽
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i>
+                        При изменении дат или номера стоимость будет пересчитана автоматически.
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/Admin/Bookings/Index" class="action-btn action-btn-outline">
+                            <i class="bi bi-arrow-left"></i> Отмена
+                        </a>
+                        <button type="submit" class="action-btn">
+                            <i class="bi bi-save"></i> Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно успеха -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #28a745; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle-fill"></i> Изменения сохранены!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-calendar-check" style="font-size: 4rem; color: #28a745;"></i>
+                <h4 class="mt-3">Бронирование #@booking.Id обновлено!</h4>
+                <div id="bookingSummary" class="text-start bg-light p-3 rounded mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn action-btn-outline" data-bs-dismiss="modal">
+                    Продолжить
+                </button>
+                <a href="/Admin/Bookings/Index" class="action-btn">
+                    К списку броней
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedPrice = @booking.PricePerNight;
+    let discountRate = @booking.DiscountRate;
+
+    // Цены номеров
+    const roomPrices = {
+        101: 2500, 102: 2500, 103: 3000,
+        201: 4000, 202: 4000, 203: 4500,
+        301: 6500, 302: 7000,
+        401: 10000, 402: 12000
+    };
+
+    // Скидки партнеров
+    const partnerDiscounts = {
+        1: 5, 2: 10, 3: 15
+    };
+
+    // Элементы
+    const roomSelect = document.getElementById('RoomId');
+    const partnerSelect = document.getElementById('PartnerId');
+    const checkInInput = document.getElementById('CheckInDate');
+    const checkOutInput = document.getElementById('CheckOutDate');
+    const discountRateInput = document.getElementById('DiscountRate');
+
+    // Установка минимальных дат
+    const today = new Date().toISOString().split('T')[0];
+    checkInInput.min = today;
+
+    // Информация о номере
+    roomSelect.addEventListener('change', function() {
+        const roomId = this.value;
+        const roomInfo = document.getElementById('roomInfo');
+        const roomInfoText = document.getElementById('roomInfoText');
+
+        if (roomId) {
+            const price = roomPrices[roomId];
+            selectedPrice = price;
+            roomInfoText.innerHTML = `Выбран номер №${roomId}. Цена за сутки: ${price.toLocaleString('ru-RU')} ₽`;
+            roomInfo.style.display = 'block';
+        } else {
+            roomInfo.style.display = 'none';
+            selectedPrice = 0;
+        }
+        updateTotalPrice();
+    });
+
+    // Скидка от партнера
+    partnerSelect.addEventListener('change', function() {
+        const partnerId = this.value;
+        if (partnerId && partnerDiscounts[partnerId]) {
+            discountRate = partnerDiscounts[partnerId];
+        } else {
+            discountRate = 0;
+        }
+        discountRateInput.value = discountRate;
+
+        const discountSpan = document.getElementById('discountSpan');
+        const discountRateSpan = document.getElementById('discountRate');
+
+        if (discountRate > 0) {
+            discountSpan.style.display = 'inline';
+            discountRateSpan.textContent = discountRate;
+        } else {
+            discountSpan.style.display = 'none';
+        }
+        updateTotalPrice();
+    });
+
+    // Обработчики дат
+    checkInInput.addEventListener('change', function() {
+        checkOutInput.min = this.value;
+        if (checkOutInput.value <= this.value) {
+            checkOutInput.value = this.value;
+        }
+        updateTotalPrice();
+    });
+
+    checkOutInput.addEventListener('change', updateTotalPrice);
+
+    // Расчет стоимости
+    function updateTotalPrice() {
+        const checkIn = new Date(checkInInput.value);
+        const checkOut = new Date(checkOutInput.value);
+
+        if (selectedPrice > 0 && checkIn && checkOut && checkOut > checkIn) {
+            const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            let total = selectedPrice * nights;
+
+            if (discountRate > 0) {
+                total = total * (1 - discountRate / 100);
+            }
+
+            document.getElementById('nightsCount').textContent = nights;
+            document.getElementById('pricePerNightDisplay').textContent = selectedPrice.toLocaleString('ru-RU');
+            document.getElementById('totalPrice').textContent = Math.round(total).toLocaleString('ru-RU');
+        } else {
+            document.getElementById('nightsCount').textContent = '0';
+            document.getElementById('pricePerNightDisplay').textContent = '0';
+            document.getElementById('totalPrice').textContent = '0';
+        }
+    }
+
+    function validateForm() {
+        let isValid = true;
+
+        const guestId = document.getElementById('GuestId');
+        if (!guestId.value) {
+            guestId.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            guestId.classList.remove('is-invalid');
+        }
+
+        const roomId = document.getElementById('RoomId');
+        if (!roomId.value) {
+            roomId.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            roomId.classList.remove('is-invalid');
+        }
+
+        const checkIn = new Date(checkInInput.value);
+        const checkOut = new Date(checkOutInput.value);
+
+        if (checkOut <= checkIn) {
+            checkOutInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            checkOutInput.classList.remove('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    function submitForm(event) {
+        event.preventDefault();
+
+        if (!validateForm()) {
+            return false;
+        }
+
+        // Собираем данные
+        const guestSelect = document.getElementById('GuestId');
+        const guestName = guestSelect.options[guestSelect.selectedIndex]?.text.split(' (')[0] || '';
+        const roomSelect = document.getElementById('RoomId');
+        const roomNumber = roomSelect.options[roomSelect.selectedIndex]?.text.split(' -')[0] || '';
+        const checkIn = checkInInput.value;
+        const checkOut = checkOutInput.value;
+        const nights = document.getElementById('nightsCount').textContent;
+        const totalPrice = document.getElementById('totalPrice').textContent;
+        const prepayment = document.getElementById('Prepayment').value || '0';
+        const partnerSelect = document.getElementById('PartnerId');
+        const partnerName = partnerSelect.options[partnerSelect.selectedIndex]?.text || 'Не указан';
+        const status = document.getElementById('Status').value;
+
+        const statusText = status === 'confirmed' ? 'Подтверждено' : (status === 'completed' ? 'Завершено' : 'Отменено');
+
+        // Формируем сводку
+        const summary = `
+            <p><strong>Гость:</strong> ${guestName}</p>
+            <p><strong>Номер:</strong> ${roomNumber}</p>
+            <p><strong>Даты:</strong> ${formatDate(checkIn)} - ${formatDate(checkOut)}</p>
+            <p><strong>Количество ночей:</strong> ${nights}</p>
+            <p><strong>Партнер:</strong> ${partnerName}</p>
+            <p><strong>Статус:</strong> ${statusText}</p>
+            <p><strong>Предоплата:</strong> ${parseInt(prepayment).toLocaleString('ru-RU')} ₽</p>
+            <hr>
+            <p class="text-end"><strong>Итого:</strong> ${totalPrice} ₽</p>
+        `;
+
+        document.getElementById('bookingSummary').innerHTML = summary;
+
+        // Показываем модальное окно
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+
+        return false;
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU');
+    }
+
+    // Инициализация
+    updateTotalPrice();
+
+    // Показываем информацию о номере при загрузке
+    if (roomSelect.value) {
+        const roomId = roomSelect.value;
+        const price = roomPrices[roomId];
+        const roomInfo = document.getElementById('roomInfo');
+        const roomInfoText = document.getElementById('roomInfoText');
+        roomInfoText.innerHTML = `Выбран номер №${roomId}. Цена за сутки: ${price.toLocaleString('ru-RU')} ₽`;
+        roomInfo.style.display = 'block';
+    }
+</script>

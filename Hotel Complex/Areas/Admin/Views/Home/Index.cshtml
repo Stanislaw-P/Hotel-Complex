@@ -1,5 +1,6 @@
 ﻿@{
-    ViewData["Title"] = "Главная";
+    ViewData["Title"] = "Админ панель";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <!-- Hero Section -->
@@ -99,15 +100,15 @@
                 <i class="bi bi-door-open"></i> Управление номерами
             </a>
 
-            <a href="#" class="action-btn">
+            <a href="/Admin/Bookings/Create" class="action-btn">
                 <i class="bi bi-calendar-plus"></i> Новое бронирование
             </a>
 
-            <a href="#" class="action-btn">
+            <a href="/Admin/Guests/Create" class="action-btn">
                 <i class="bi bi-person-plus"></i> Регистрация гостя
             </a>
 
-            <a href="#" class="action-btn action-btn-outline">
+            <a href="/Admin/Reports/Index" class="action-btn action-btn-outline">
                 <i class="bi bi-file-text"></i> Отчеты
             </a>
 
