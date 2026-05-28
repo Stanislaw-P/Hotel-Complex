@@ -10,6 +10,7 @@ builder.Services.AddSingleton<DbConnectionFactory>();
 builder.Services.AddSingleton<DatabaseInitializer>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 var app = builder.Build();
 

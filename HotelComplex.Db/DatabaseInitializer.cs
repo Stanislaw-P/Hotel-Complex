@@ -47,7 +47,6 @@ namespace HotelComplex.Db
             await ExecuteCommandAsync(connection, "CREATE DATABASE IF NOT EXISTS HotelComplex;");
             await connection.ChangeDatabaseAsync("HotelComplex");
 
-            // Создаем таблицы в правильном порядке
             await CreateRolesTable(connection);
             await CreateUsersTable(connection);
             await CreateGuestProfilesTable(connection);
@@ -376,6 +375,8 @@ namespace HotelComplex.Db
             await InsertAdminUser(connection);
             await InsertRoomTypes(connection);
             await InsertServices(connection);
+            await InsertCorporatePartners(connection);  // ← добавьте этот метод
+            await InsertContracts(connection);
             await GenerateRooms(connection);
         }
 
@@ -462,6 +463,57 @@ namespace HotelComplex.Db
                 ('Парковка', 300);";
 
             await ExecuteCommandAsync(connection, sql);
+        }
+
+        private async Task InsertCorporatePartners(MySqlConnection connection)
+        {
+            var sql = @"
+        INSERT IGNORE INTO CorporatePartner (OrganizationName, LegalAddress, ContactPerson, Phone, Email) VALUES
+        ('ООО ''Рога и Копыта''', 'г. Москва, ул. Ленина, д. 1', 'Иванов И.И.', '+7 (999) 111-22-33', 'partner1@mail.ru'),
+        ('ЗАО ''ТехноПром''', 'г. Санкт-Петербург, пр. Невский, д. 100', 'Петров П.П.', '+7 (999) 222-33-44', 'partner2@mail.ru'),
+        ('АО ''БизнесТревел''', 'г. Новосибирск, ул. Советская, д. 50', 'Сидоров С.С.', '+7 (999) 333-44-55', 'partner3@mail.ru');";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("Corporate partners inserted");
+        }
+
+        private async Task InsertContracts(MySqlConnection connection)
+        {
+            // Получаем ID партнеров
+            var getPartnerIds = "SELECT Id, OrganizationName FROM CorporatePartner";
+            var partners = new List<(uint Id, string Name)>();
+
+            using (var command = new MySqlCommand(getPartnerIds, connection))
+            using (var reader = (MySqlDataReader)await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    partners.Add((reader.GetUInt32("Id"), reader.GetString("OrganizationName")));
+                }
+            }
+
+            if (partners.Count == 0) return;
+
+            // Определяем ID для вставки (если партнеров меньше 3, используем первого)
+            uint partnerId1 = partners.Count > 0 ? partners[0].Id : 1;
+            uint partnerId2 = partners.Count > 1 ? partners[1].Id : partnerId1;
+            uint partnerId3 = partners.Count > 2 ? partners[2].Id : partnerId1;
+
+            var sql = @"
+                INSERT IGNORE INTO Contract (PartnerId, ConclusionDate, ValidUntil, DiscountRate) VALUES
+                (@PartnerId1, '2024-01-15', '2024-12-31', 5.00),
+                (@PartnerId2, '2024-02-10', '2024-12-31', 10.00),
+                (@PartnerId3, '2024-03-20', '2025-03-19', 15.00);";
+
+            using (var cmd = new MySqlCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@PartnerId1", partnerId1);
+                cmd.Parameters.AddWithValue("@PartnerId2", partnerId2);
+                cmd.Parameters.AddWithValue("@PartnerId3", partnerId3);
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            _logger.LogInformation("Contracts inserted");
         }
 
         private async Task GenerateRooms(MySqlConnection connection)
