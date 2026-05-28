@@ -1,11 +1,14 @@
 using HotelComplex.Db;
+using HotelComplex.Db.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSingleton<DbConnectionFactory>();
 builder.Services.AddSingleton<DatabaseInitializer>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 
 var app = builder.Build();
 
