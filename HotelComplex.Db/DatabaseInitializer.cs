@@ -21,12 +21,8 @@ namespace HotelComplex.Db
         {
             try
             {
-                // Проверяем подключение к MySQL
                 await TestConnectionAsync();
-
-                // Создаем базу данных и таблицы
                 await CreateDatabaseAndTablesAsync();
-
                 _logger.LogInformation("Database initialized successfully");
             }
             catch (Exception ex)
@@ -48,20 +44,18 @@ namespace HotelComplex.Db
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            // Создаем базу данных, если не существует
             await ExecuteCommandAsync(connection, "CREATE DATABASE IF NOT EXISTS HotelComplex;");
-
-            // Переключаемся на созданную базу
             await connection.ChangeDatabaseAsync("HotelComplex");
 
-            // Создаем таблицу журнала ПЕРВОЙ
-            await CreateJournalTable(connection);
+            // Создаем таблицы в правильном порядке
+            await CreateRolesTable(connection);
+            await CreateUsersTable(connection);
+            await CreateGuestProfilesTable(connection);
+            await CreateEmployeeProfilesTable(connection);
 
-            // Создаем все основные таблицы
+            await CreateJournalTable(connection);
             await CreateRoomTypeTable(connection);
             await CreateRoomTable(connection);
-            await CreateGuestTable(connection);
-            await CreateEmployeeTable(connection);
             await CreateCorporatePartnerTable(connection);
             await CreateContractTable(connection);
             await CreateServiceTable(connection);
@@ -71,16 +65,11 @@ namespace HotelComplex.Db
             await CreateInvoiceTable(connection);
             await CreateReviewTable(connection);
 
-            // Добавляем начальные данные
             await InsertInitialData(connection);
-
-            // Удаляем старые архивные таблицы (если есть)
             await DropArchiveTables(connection);
-
-            // Создаем триггеры и архивные таблицы для всех основных таблиц
             await CreateTriggersForAllTables(connection);
 
-            _logger.LogInformation("All tables, archive tables, and triggers created successfully");
+            _logger.LogInformation("All tables created successfully");
         }
 
         private async Task ExecuteCommandAsync(MySqlConnection connection, string commandText)
@@ -93,12 +82,86 @@ namespace HotelComplex.Db
             }
             catch (MySqlException ex)
             {
-                // Игнорируем ошибки duplicate key и already exists
                 if (ex.Number != 1061 && ex.Number != 1050 && ex.Number != 1062)
                 {
                     _logger.LogWarning(ex, "Error executing SQL command: {Command}", commandText);
                 }
             }
+        }
+
+        #region Tables Creation
+
+        private async Task CreateRolesTable(MySqlConnection connection)
+        {
+            var sql = @"
+                CREATE TABLE IF NOT EXISTS Roles (
+                    Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(50) NOT NULL UNIQUE,
+                    Description VARCHAR(200)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("Roles table created");
+        }
+
+        private async Task CreateUsersTable(MySqlConnection connection)
+        {
+            var sql = @"
+                CREATE TABLE IF NOT EXISTS Users (
+                    Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    Email VARCHAR(100) NOT NULL UNIQUE,
+                    PasswordHash VARCHAR(255) NOT NULL,
+                    Phone VARCHAR(20) NOT NULL,
+                    RoleId INT UNSIGNED NOT NULL,
+                    IsActive BOOLEAN DEFAULT TRUE,
+                    CreatedAt DATETIME NOT NULL,
+                    LastLoginAt DATETIME NULL,
+                    INDEX idx_Email (Email),
+                    INDEX idx_RoleId (RoleId),
+                    FOREIGN KEY (RoleId) REFERENCES Roles(Id) ON DELETE RESTRICT
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("Users table created");
+        }
+
+        private async Task CreateGuestProfilesTable(MySqlConnection connection)
+        {
+            var sql = @"
+                CREATE TABLE IF NOT EXISTS GuestProfiles (
+                    UserId INT UNSIGNED PRIMARY KEY,
+                    LastName VARCHAR(50) NOT NULL,
+                    FirstName VARCHAR(50) NOT NULL,
+                    MiddleName VARCHAR(50),
+                    PassportSeries VARCHAR(10) NOT NULL,
+                    PassportNumber VARCHAR(20) NOT NULL,
+                    Citizenship VARCHAR(50) DEFAULT 'РФ',
+                    UNIQUE KEY Unique_Passport (PassportSeries, PassportNumber),
+                    INDEX idx_Name (LastName, FirstName),
+                    FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("GuestProfiles table created");
+        }
+
+        private async Task CreateEmployeeProfilesTable(MySqlConnection connection)
+        {
+            var sql = @"
+                CREATE TABLE IF NOT EXISTS EmployeeProfiles (
+                    UserId INT UNSIGNED PRIMARY KEY,
+                    LastName VARCHAR(50) NOT NULL,
+                    FirstName VARCHAR(50) NOT NULL,
+                    MiddleName VARCHAR(50),
+                    Position VARCHAR(50) NOT NULL,
+                    HireDate DATE NOT NULL,
+                    Salary DECIMAL(10,2),
+                    INDEX idx_Name (LastName, FirstName),
+                    FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("EmployeeProfiles table created");
         }
 
         private async Task CreateRoomTypeTable(MySqlConnection connection)
@@ -129,49 +192,6 @@ namespace HotelComplex.Db
                     INDEX idx_Status (Status),
                     INDEX idx_RoomTypeId (RoomTypeId),
                     FOREIGN KEY (RoomTypeId) REFERENCES RoomType(Id) ON DELETE RESTRICT
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-            await ExecuteCommandAsync(connection, sql);
-        }
-
-        private async Task CreateGuestTable(MySqlConnection connection)
-        {
-            var sql = @"
-                CREATE TABLE IF NOT EXISTS Guest (
-                    Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                    LastName VARCHAR(50) NOT NULL,
-                    FirstName VARCHAR(50) NOT NULL,
-                    MiddleName VARCHAR(50),
-                    PassportSeries VARCHAR(10) NOT NULL,
-                    PassportNumber VARCHAR(20) NOT NULL,
-                    Citizenship VARCHAR(50) DEFAULT 'РФ',
-                    Phone VARCHAR(20) NOT NULL,
-                    Email VARCHAR(100),
-                    UNIQUE KEY Unique_Passport (PassportSeries, PassportNumber),
-                    UNIQUE KEY Unique_Phone (Phone),
-                    INDEX idx_Email (Email),
-                    INDEX idx_Name (LastName, FirstName)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-            await ExecuteCommandAsync(connection, sql);
-        }
-
-        private async Task CreateEmployeeTable(MySqlConnection connection)
-        {
-            var sql = @"
-                CREATE TABLE IF NOT EXISTS Employee (
-                    Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                    LastName VARCHAR(50) NOT NULL,
-                    FirstName VARCHAR(50) NOT NULL,
-                    MiddleName VARCHAR(50),
-                    PassportSeries VARCHAR(10) NOT NULL,
-                    PassportNumber VARCHAR(20) NOT NULL,
-                    Position VARCHAR(25) NOT NULL,
-                    Phone VARCHAR(20) NOT NULL,
-                    Email VARCHAR(100),
-                    UNIQUE KEY Unique_Passport (PassportSeries, PassportNumber),
-                    UNIQUE KEY Unique_Phone (Phone),
-                    UNIQUE KEY Unique_Email (Email)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
             await ExecuteCommandAsync(connection, sql);
@@ -240,7 +260,7 @@ namespace HotelComplex.Db
                     INDEX idx_RoomId (RoomId),
                     INDEX idx_Dates (CheckInDate, CheckOutDate),
                     INDEX idx_Status (Status),
-                    FOREIGN KEY (GuestId) REFERENCES Guest(Id) ON DELETE RESTRICT,
+                    FOREIGN KEY (GuestId) REFERENCES GuestProfiles(UserId) ON DELETE RESTRICT,
                     FOREIGN KEY (RoomId) REFERENCES Room(Id) ON DELETE RESTRICT,
                     FOREIGN KEY (PartnerId) REFERENCES CorporatePartner(Id) ON DELETE SET NULL,
                     FOREIGN KEY (ContractId) REFERENCES Contract(Id) ON DELETE SET NULL
@@ -265,7 +285,7 @@ namespace HotelComplex.Db
                     INDEX idx_RoomId (RoomId),
                     INDEX idx_Dates (ActualCheckIn, ActualCheckOut),
                     FOREIGN KEY (BookingId) REFERENCES Booking(Id) ON DELETE RESTRICT,
-                    FOREIGN KEY (GuestId) REFERENCES Guest(Id) ON DELETE RESTRICT,
+                    FOREIGN KEY (GuestId) REFERENCES GuestProfiles(UserId) ON DELETE RESTRICT,
                     FOREIGN KEY (RoomId) REFERENCES Room(Id) ON DELETE RESTRICT
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
@@ -302,8 +322,8 @@ namespace HotelComplex.Db
                     IsPaid BOOLEAN DEFAULT FALSE,
                     UNIQUE KEY Unique_Stay (StayId),
                     FOREIGN KEY (StayId) REFERENCES Stay(Id) ON DELETE RESTRICT,
-                    FOREIGN KEY (GuestId) REFERENCES Guest(Id) ON DELETE RESTRICT,
-                    FOREIGN KEY (EmployeeId) REFERENCES Employee(Id) ON DELETE RESTRICT
+                    FOREIGN KEY (GuestId) REFERENCES GuestProfiles(UserId) ON DELETE RESTRICT,
+                    FOREIGN KEY (EmployeeId) REFERENCES EmployeeProfiles(UserId) ON DELETE RESTRICT
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
             await ExecuteCommandAsync(connection, sql);
@@ -320,27 +340,115 @@ namespace HotelComplex.Db
                     FeedbackDate DATETIME NOT NULL,
                     Type ENUM('review', 'complaint') NOT NULL,
                     INDEX idx_Type (Type),
-                    FOREIGN KEY (GuestId) REFERENCES Guest(Id) ON DELETE RESTRICT,
+                    FOREIGN KEY (GuestId) REFERENCES GuestProfiles(UserId) ON DELETE RESTRICT,
                     FOREIGN KEY (StayId) REFERENCES Stay(Id) ON DELETE RESTRICT
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
             await ExecuteCommandAsync(connection, sql);
         }
 
+        private async Task CreateJournalTable(MySqlConnection connection)
+        {
+            var sql = @"
+                CREATE TABLE IF NOT EXISTS journal (
+                    Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    TableName VARCHAR(100) NOT NULL DEFAULT '',
+                    Operation VARCHAR(10) NOT NULL DEFAULT '',
+                    OperationDate DATETIME NOT NULL,
+                    UserName VARCHAR(200) NOT NULL DEFAULT '',
+                    INDEX idx_TableName (TableName),
+                    INDEX idx_Operation (Operation),
+                    INDEX idx_OperationDate (OperationDate),
+                    INDEX idx_UserName (UserName)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("Journal table created");
+        }
+
+        #endregion
+
+        #region Initial Data
+
         private async Task InsertInitialData(MySqlConnection connection)
         {
-            // Вставляем типы номеров
-            var roomTypes = @"
+            await InsertRoles(connection);
+            await InsertAdminUser(connection);
+            await InsertRoomTypes(connection);
+            await InsertServices(connection);
+            await GenerateRooms(connection);
+        }
+
+        private async Task InsertRoles(MySqlConnection connection)
+        {
+            var sql = @"
+                INSERT IGNORE INTO Roles (Name, Description) VALUES
+                ('Admin', 'Полный доступ ко всем функциям системы'),
+                ('Manager', 'Управление бронированиями и гостями'),
+                ('User', 'Обычный пользователь');";
+
+            await ExecuteCommandAsync(connection, sql);
+            _logger.LogInformation("Roles inserted");
+        }
+
+        private async Task InsertAdminUser(MySqlConnection connection)
+        {
+            // Получаем ID роли Admin
+            var getRoleIdSql = "SELECT Id FROM Roles WHERE Name = 'Admin'";
+            uint roleId;
+            using (var cmd = new MySqlCommand(getRoleIdSql, connection))
+            {
+                roleId = Convert.ToUInt32(await cmd.ExecuteScalarAsync());
+            }
+
+            // Проверяем, существует ли уже admin
+            var checkSql = "SELECT COUNT(*) FROM Users WHERE Email = 'admin@hotel.com'";
+            using var checkCmd = new MySqlCommand(checkSql, connection);
+            var exists = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
+
+            if (exists == 0)
+            {
+                // Создаем пользователя
+                var insertUserSql = @"
+                    INSERT INTO Users (Email, PasswordHash, Phone, RoleId, IsActive, CreatedAt)
+                    VALUES ('admin@hotel.com', 'admin123', '+7 (999) 123-45-67', @RoleId, TRUE, NOW());
+                    SELECT LAST_INSERT_ID();";
+
+                uint userId;
+                using (var cmd = new MySqlCommand(insertUserSql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@RoleId", roleId);
+                    userId = Convert.ToUInt32(await cmd.ExecuteScalarAsync());
+                }
+
+                // Создаем профиль сотрудника
+                var insertProfileSql = @"
+                    INSERT INTO EmployeeProfiles (UserId, LastName, FirstName, MiddleName, Position, HireDate, Salary)
+                    VALUES (@UserId, 'Admin', 'System', NULL, 'Главный администратор', CURDATE(), 50000);";
+
+                using var profileCmd = new MySqlCommand(insertProfileSql, connection);
+                profileCmd.Parameters.AddWithValue("@UserId", userId);
+                await profileCmd.ExecuteNonQueryAsync();
+
+                _logger.LogInformation("Default admin user created: admin@hotel.com / admin123");
+            }
+        }
+
+        private async Task InsertRoomTypes(MySqlConnection connection)
+        {
+            var sql = @"
                 INSERT IGNORE INTO RoomType (Name, Description) VALUES
                 ('Стандарт', 'Стандартный номер с одной кроватью'),
                 ('Полулюкс', 'Улучшенный номер с дополнительным пространством'),
                 ('Люкс', 'Номер повышенной комфортности'),
                 ('Апартаменты', 'Просторные апартаменты с гостиной зоной');";
 
-            await ExecuteCommandAsync(connection, roomTypes);
+            await ExecuteCommandAsync(connection, sql);
+        }
 
-            // Вставляем услуги
-            var services = @"
+        private async Task InsertServices(MySqlConnection connection)
+        {
+            var sql = @"
                 INSERT IGNORE INTO Service (Name, Price) VALUES
                 ('Завтрак', 500),
                 ('Обед', 800),
@@ -353,15 +461,11 @@ namespace HotelComplex.Db
                 ('Тренажерный зал', 500),
                 ('Парковка', 300);";
 
-            await ExecuteCommandAsync(connection, services);
-
-            // Генерируем номера
-            await GenerateRooms(connection);
+            await ExecuteCommandAsync(connection, sql);
         }
 
         private async Task GenerateRooms(MySqlConnection connection)
         {
-            // Получаем ID типов номеров
             var getTypeIds = "SELECT Id FROM RoomType ORDER BY Id";
             List<ushort> typeIds = new List<ushort>();
 
@@ -376,7 +480,6 @@ namespace HotelComplex.Db
 
             if (typeIds.Count == 0) return;
 
-            // Генерируем номера для 5 этажей
             for (int floor = 1; floor <= 5; floor++)
             {
                 for (int roomNum = 1; roomNum <= 10; roomNum++)
@@ -404,25 +507,9 @@ namespace HotelComplex.Db
             _logger.LogInformation("Generated rooms for all floors");
         }
 
+        #endregion
 
-        private async Task CreateJournalTable(MySqlConnection connection)
-        {
-            var sql = @"
-        CREATE TABLE IF NOT EXISTS journal (
-            Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            TableName VARCHAR(100) NOT NULL DEFAULT '',
-            Operation VARCHAR(10) NOT NULL DEFAULT '',
-            OperationDate DATETIME NOT NULL,
-            UserName VARCHAR(200) NOT NULL DEFAULT '',
-            INDEX idx_TableName (TableName),
-            INDEX idx_Operation (Operation),
-            INDEX idx_OperationDate (OperationDate),
-            INDEX idx_UserName (UserName)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-            await ExecuteCommandAsync(connection, sql);
-            _logger.LogInformation("Journal table created");
-        }
+        #region Archive and Triggers
 
         private async Task DropArchiveTables(MySqlConnection connection)
         {
@@ -460,16 +547,14 @@ namespace HotelComplex.Db
         {
             var archiveName = $"{tableName}_arch";
 
-            // Создаем архивную таблицу с такой же структурой
             var createArchiveSql = $"CREATE TABLE IF NOT EXISTS {archiveName} LIKE {tableName}";
             await ExecuteCommandAsync(connection, createArchiveSql);
 
-            // Добавляем связь с журналом
             var addJournalIdSql = $@"
-        ALTER TABLE {archiveName} 
-        ADD COLUMN JournalId INT UNSIGNED,
-        ADD INDEX idx_JournalId (JournalId),
-        ADD FOREIGN KEY (JournalId) REFERENCES journal(Id) ON DELETE SET NULL";
+                ALTER TABLE {archiveName} 
+                ADD COLUMN JournalId INT UNSIGNED,
+                ADD INDEX idx_JournalId (JournalId),
+                ADD FOREIGN KEY (JournalId) REFERENCES journal(Id) ON DELETE SET NULL";
 
             await ExecuteCommandAsync(connection, addJournalIdSql);
 
@@ -483,63 +568,60 @@ namespace HotelComplex.Db
             var valuesList = string.Join(", ", columns.Select(c => $"NEW.{c}"));
             var oldValuesList = string.Join(", ", columns.Select(c => $"OLD.{c}"));
 
-            // Триггер на INSERT
             var insertTriggerSql = $@"
-            DROP TRIGGER IF EXISTS {tableName}_insert;
-            CREATE TRIGGER {tableName}_insert
-            AFTER INSERT ON {tableName}
-            FOR EACH ROW
-            BEGIN
-                DECLARE last_id INT;
-            
-                INSERT INTO journal (TableName, Operation, OperationDate, UserName)
-                VALUES ('{tableName}', 'INSERT', NOW(), USER());
-            
-                SET last_id = LAST_INSERT_ID();
-            
-                INSERT INTO {archiveName} ({columnsList}, JournalId)
-                VALUES ({valuesList}, last_id);
-            END;";
+                DROP TRIGGER IF EXISTS {tableName}_insert;
+                CREATE TRIGGER {tableName}_insert
+                AFTER INSERT ON {tableName}
+                FOR EACH ROW
+                BEGIN
+                    DECLARE last_id INT;
+                    
+                    INSERT INTO journal (TableName, Operation, OperationDate, UserName)
+                    VALUES ('{tableName}', 'INSERT', NOW(), USER());
+                    
+                    SET last_id = LAST_INSERT_ID();
+                    
+                    INSERT INTO {archiveName} ({columnsList}, JournalId)
+                    VALUES ({valuesList}, last_id);
+                END;";
 
             await ExecuteCommandAsync(connection, insertTriggerSql);
 
-            // Триггер на UPDATE
             var updateTriggerSql = $@"
-            DROP TRIGGER IF EXISTS {tableName}_update;
-            CREATE TRIGGER {tableName}_update
-            AFTER UPDATE ON {tableName}
-            FOR EACH ROW
-            BEGIN
-                DECLARE last_id INT;
-            
-                INSERT INTO journal (TableName, Operation, OperationDate, UserName)
-                VALUES ('{tableName}', 'UPDATE', NOW(), USER());
-            
-                SET last_id = LAST_INSERT_ID();
-            
-                INSERT INTO {archiveName} ({columnsList}, JournalId)
-                VALUES (NEW.{columnsList.Replace("NEW.", "")}, last_id);
-            END;";
+                DROP TRIGGER IF EXISTS {tableName}_update;
+                CREATE TRIGGER {tableName}_update
+                AFTER UPDATE ON {tableName}
+                FOR EACH ROW
+                BEGIN
+                    DECLARE last_id INT;
+                    
+                    INSERT INTO journal (TableName, Operation, OperationDate, UserName)
+                    VALUES ('{tableName}', 'UPDATE', NOW(), USER());
+                    
+                    SET last_id = LAST_INSERT_ID();
+                    
+                    INSERT INTO {archiveName} ({columnsList}, JournalId)
+                    VALUES ({valuesList}, last_id);
+                END;";
 
             await ExecuteCommandAsync(connection, updateTriggerSql);
 
-            // Триггер на DELETE
             var deleteTriggerSql = $@"
-            DROP TRIGGER IF EXISTS {tableName}_delete;
-            CREATE TRIGGER {tableName}_delete
-            AFTER DELETE ON {tableName}
-            FOR EACH ROW
-            BEGIN
-                DECLARE last_id INT;
-            
-                INSERT INTO journal (TableName, Operation, OperationDate, UserName)
-                VALUES ('{tableName}', 'DELETE', NOW(), USER());
-            
-                SET last_id = LAST_INSERT_ID();
-            
-                INSERT INTO {archiveName} ({columnsList}, JournalId)
-                VALUES ({oldValuesList}, last_id);
-            END;";
+                DROP TRIGGER IF EXISTS {tableName}_delete;
+                CREATE TRIGGER {tableName}_delete
+                AFTER DELETE ON {tableName}
+                FOR EACH ROW
+                BEGIN
+                    DECLARE last_id INT;
+                    
+                    INSERT INTO journal (TableName, Operation, OperationDate, UserName)
+                    VALUES ('{tableName}', 'DELETE', NOW(), USER());
+                    
+                    SET last_id = LAST_INSERT_ID();
+                    
+                    INSERT INTO {archiveName} ({columnsList}, JournalId)
+                    VALUES ({oldValuesList}, last_id);
+                END;";
 
             await ExecuteCommandAsync(connection, deleteTriggerSql);
 
@@ -548,7 +630,6 @@ namespace HotelComplex.Db
 
         private async Task CreateTriggersForAllTables(MySqlConnection connection)
         {
-            // Получаем список всех таблиц (кроме служебных)
             var tables = new List<string>();
             var getTablesSql = "SHOW TABLES";
 
@@ -558,23 +639,17 @@ namespace HotelComplex.Db
                 while (await reader.ReadAsync())
                 {
                     var tableName = reader.GetString(0);
-                    if (tableName != "journal" && !tableName.Contains("_arch"))
+                    if (tableName != "journal" && !tableName.Contains("_arch") && tableName != "Roles")
                     {
                         tables.Add(tableName);
                     }
                 }
             }
 
-            // Для каждой таблицы создаем архивную таблицу и триггеры
             foreach (var tableName in tables)
             {
-                // Получаем список колонок таблицы
                 var columns = await GetTableColumns(connection, tableName);
-
-                // Создаем архивную таблицу
                 await CreateArchiveTable(connection, tableName);
-
-                // Создаем триггеры
                 await CreateTriggersForTable(connection, tableName, columns);
             }
         }
@@ -590,7 +665,6 @@ namespace HotelComplex.Db
                 while (await reader.ReadAsync())
                 {
                     var columnName = reader.GetString(0);
-                    // Пропускаем auto_increment колонки при вставке
                     var extra = reader.GetString(5);
                     if (!extra.Contains("auto_increment"))
                     {
@@ -601,5 +675,7 @@ namespace HotelComplex.Db
 
             return columns;
         }
+
+        #endregion
     }
 }
