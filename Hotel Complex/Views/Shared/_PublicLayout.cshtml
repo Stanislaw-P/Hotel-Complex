@@ -38,11 +38,35 @@
                             <i class="bi bi-grid"></i> Дополнительные услуги
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Login", "Account")">
-                            <i class="bi bi-box-arrow-in-right"></i> Вход
-                        </a>
-                    </li>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> @User.Identity.Name
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/Profile"><i class="bi bi-person"></i> Профиль</a></li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li><a class="dropdown-item" href="/Admin"><i class="bi bi-shield-lock"></i> Админ-панель</a></li>
+                            }
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right"></i> Выйти
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Login", "Account")">
+                                <i class="bi bi-box-arrow-in-right"></i> Вход
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

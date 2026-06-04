@@ -1,16 +1,36 @@
+using Hotel_Complex.Services;
 using HotelComplex.Db;
 using HotelComplex.Db.Repositories;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Home/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+        options.Cookie.Name = "HotelComplexAuth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSingleton<DbConnectionFactory>();
 builder.Services.AddSingleton<DatabaseInitializer>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
 
@@ -27,6 +47,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllerRoute(

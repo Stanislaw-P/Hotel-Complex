@@ -41,7 +41,7 @@ namespace HotelComplex.Db.Repositories
             if (await reader.ReadAsync())
             {
                 var user = MapUserFromReader((MySqlDataReader)reader);
-                user.Role = MapRoleFromReader((MySqlDataReader)reader);
+                user.Role = MapRoleFromReader((MySqlDataReader)reader, "RoleId", "RoleName", "RoleDescription");
                 return user;
             }
             return null;
@@ -65,7 +65,7 @@ namespace HotelComplex.Db.Repositories
             if (await reader.ReadAsync())
             {
                 var user = MapUserFromReader((MySqlDataReader)reader);
-                user.Role = MapRoleFromReader((MySqlDataReader)reader);
+                user.Role = MapRoleFromReader((MySqlDataReader)reader, "RoleId", "RoleName", "RoleDescription");
                 return user;
             }
             return null;
@@ -90,7 +90,7 @@ namespace HotelComplex.Db.Repositories
             while (await reader.ReadAsync())
             {
                 var user = MapUserFromReader((MySqlDataReader)reader);
-                user.Role = MapRoleFromReader((MySqlDataReader)reader);
+                user.Role = MapRoleFromReader((MySqlDataReader)reader, "RoleId", "RoleName", "RoleDescription");
                 users.Add(user);
             }
 
@@ -384,7 +384,7 @@ namespace HotelComplex.Db.Repositories
             while (await reader.ReadAsync())
             {
                 var user = MapUserFromReader((MySqlDataReader)reader);
-                user.Role = MapRoleFromReader((MySqlDataReader)reader);
+                user.Role = MapRoleFromReader((MySqlDataReader)reader, "RoleId", "RoleName", "RoleDescription");
                 users.Add(user);
             }
 
@@ -416,7 +416,7 @@ namespace HotelComplex.Db.Repositories
             while (await reader.ReadAsync())
             {
                 var user = MapUserFromReader((MySqlDataReader)reader);
-                user.Role = MapRoleFromReader((MySqlDataReader)reader);
+                user.Role = MapRoleFromReader((MySqlDataReader)reader, "RoleId", "RoleName", "RoleDescription");
                 users.Add(user);
             }
 
@@ -655,14 +655,14 @@ namespace HotelComplex.Db.Repositories
             };
         }
 
-        private Role MapRoleFromReader(MySqlDataReader reader)
+        private Role MapRoleFromReader(MySqlDataReader reader, string idColumn = "Id", string nameColumn = "Name", string descriptionColumn = "Description")
         {
             return new Role
             {
-                Id = reader.GetUInt32("RoleId"),
-                Name = reader.GetString("RoleName"),
-                Description = reader.IsDBNull(reader.GetOrdinal("RoleDescription"))
-                    ? null : reader.GetString("RoleDescription")
+                Id = reader.GetUInt32(idColumn),
+                Name = reader.GetString(nameColumn),
+                Description = reader.IsDBNull(reader.GetOrdinal(descriptionColumn))
+                    ? null : reader.GetString(descriptionColumn)
             };
         }
 
